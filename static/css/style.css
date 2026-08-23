@@ -1,0 +1,532 @@
+/* =========================================================================
+   WEBGIS SANITAIRE — DESIGN SYSTEM
+   Palette institutionnelle Sénégal (vert / orange) revue avec une
+   identité plus moderne : dégradés doux, cartes avec relief, micro-
+   animations et une meilleure hiérarchie typographique.
+========================================================================= */
+
+:root {
+    /* Couleurs de marque */
+    --brand-green:        #0B8A4A;
+    --brand-green-dark:   #075C31;
+    --brand-green-light:  #12c967;
+    --brand-orange:       #FF6B35;
+    --brand-orange-dark:  #E4531F;
+    --brand-orange-light: #FFF1EA;
+
+    /* Couleurs fonctionnelles */
+    --color-success: #16A34A;
+    --color-danger:  #E5484D;
+    --color-warning: #F59E0B;
+    --color-info:    #3B82F6;
+
+    /* Neutres */
+    --ink-900: #0F172A;
+    --ink-700: #334155;
+    --ink-500: #64748B;
+    --ink-300: #053b20;
+    --ink-100: #F1F5F9;
+    --surface: #FFFFFF;
+    --bg-page: #F6F8FB;
+
+    /* Rayons et ombres */
+    --radius-sm: 8px;
+    --radius-md: 14px;
+    --radius-lg: 20px;
+    --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.08);
+    --shadow-md: 0 8px 24px rgba(15, 23, 42, 0.08);
+    --shadow-lg: 0 20px 45px rgba(15, 23, 42, 0.12);
+
+    --gradient-brand: linear-gradient(135deg, var(--brand-green) 0%, var(--brand-green-dark) 100%);
+    --gradient-accent: linear-gradient(135deg, var(--brand-orange) 0%, var(--brand-orange-dark) 100%);
+}
+
+/* =========================================================================
+   BASE
+========================================================================= */
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+    background-color: var(--bg-page);
+    color: var(--ink-700);
+    font-family: "Inter", "Segoe UI", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    animation: fadeInBody 0.35s ease;
+}
+
+@keyframes fadeInBody {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+h1, h2, h3, h4, h5, h6, .brand-font {
+    font-family: "Poppins", "Segoe UI", Arial, sans-serif;
+    color: var(--ink-900);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+a { color: var(--brand-green); }
+a:hover { color: var(--brand-green-dark); }
+
+::selection {
+    background: var(--brand-orange);
+    color: #fff;
+}
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--ink-100); }
+::-webkit-scrollbar-thumb { background: var(--ink-300); border-radius: 20px; }
+::-webkit-scrollbar-thumb:hover { background: var(--brand-green); }
+
+/* =========================================================================
+   BANDEAU INSTITUTIONNEL
+========================================================================= */
+
+.health-topbar {
+    background: var(--gradient-brand);
+    color: #fff;
+}
+
+.health-topbar-badge {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    padding: 5px 18px;
+    border-radius: 30px;
+    font-size: 0.8rem;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.health-topbar-badge i { color: var(--brand-orange); margin-right: 4px; }
+
+/* =========================================================================
+   NAVBAR
+========================================================================= */
+
+.main-navbar {
+    background: var(--gradient-brand);
+    padding-top: 0.65rem;
+    padding-bottom: 0.65rem;
+}
+
+.navbar-brand {
+    letter-spacing: 0.2px;
+    font-family: "Poppins", sans-serif;
+    font-size: 1.15rem;
+}
+
+.badge-accent {
+    background: var(--gradient-accent);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(255, 107, 53, 0.35);
+}
+
+.main-navbar .nav-link {
+    font-weight: 500;
+    border-radius: 8px;
+    padding: 0.5rem 0.9rem !important;
+    margin: 0 2px;
+    transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.main-navbar .nav-link:hover {
+    background: rgba(255, 255, 255, 0.12);
+    transform: translateY(-1px);
+}
+
+.main-navbar .nav-link.active {
+    background: rgba(255, 255, 255, 0.18) !important;
+    font-weight: 600;
+}
+
+.dropdown-menu {
+    border: none;
+    box-shadow: var(--shadow-lg);
+    border-radius: var(--radius-md);
+    padding: 8px;
+    border-top: 3px solid var(--brand-orange);
+}
+
+.dropdown-item {
+    border-radius: 8px;
+    padding: 0.55rem 0.9rem;
+    transition: background 0.15s ease;
+}
+
+.dropdown-item:hover { background: var(--brand-green-light); }
+
+/* =========================================================================
+   BOUTONS
+========================================================================= */
+
+.btn {
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.btn:active { transform: translateY(1px); }
+
+.btn-primary {
+    background: var(--gradient-brand);
+    border: none;
+    box-shadow: 0 4px 14px rgba(11, 138, 74, 0.3);
+}
+
+.btn-primary:hover {
+    background: var(--brand-green-dark);
+    box-shadow: 0 6px 18px rgba(11, 138, 74, 0.4);
+    transform: translateY(-1px);
+}
+
+.btn-warning, .btn-accent {
+    background: var(--gradient-accent);
+    border: none;
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(255, 107, 53, 0.3);
+}
+
+.btn-warning:hover, .btn-accent:hover {
+    color: #fff;
+    box-shadow: 0 6px 18px rgba(255, 107, 53, 0.4);
+    transform: translateY(-1px);
+}
+
+.btn-outline-primary {
+    border-color: var(--brand-green);
+    color: var(--brand-green);
+}
+
+.btn-outline-primary:hover {
+    background: var(--brand-green);
+    border-color: var(--brand-green);
+    transform: translateY(-1px);
+}
+
+.btn-sm { border-radius: 7px; }
+
+/* =========================================================================
+   CARTES / STAT CARDS
+========================================================================= */
+
+.card {
+    border: none;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.stat-card {
+    background: var(--surface);
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--ink-100);
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+}
+
+.stat-card::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0;
+    width: 5px; height: 100%;
+    background: var(--gradient-brand);
+}
+
+.stat-card.stat-accent::before { background: var(--gradient-accent); }
+.stat-card.stat-info::before { background: linear-gradient(135deg, var(--color-info), #1D4ED8); }
+.stat-card.stat-danger::before { background: linear-gradient(135deg, var(--color-danger), #B91C1C); }
+
+.stat-card .stat-icon {
+    width: 52px; height: 52px;
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem;
+    background: var(--brand-green-light);
+    color: var(--brand-green);
+    margin-bottom: 0.75rem;
+}
+
+.stat-card .stat-value {
+    font-family: "Poppins", sans-serif;
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--ink-900);
+    line-height: 1.1;
+}
+
+.stat-card .stat-label {
+    color: var(--ink-500);
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.stat-card .stat-trend {
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 0.4rem;
+}
+
+.stat-trend.up { color: var(--color-success); }
+.stat-trend.down { color: var(--color-danger); }
+
+/* =========================================================================
+   BADGES / TAGS
+========================================================================= */
+
+.badge {
+    font-weight: 600;
+    border-radius: 20px;
+    padding: 0.4em 0.85em;
+}
+
+/* =========================================================================
+   TABLEAUX
+========================================================================= */
+
+.table {
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+.table thead th {
+    background: var(--brand-green-light);
+    color: var(--brand-green-dark);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+    border: none;
+    padding: 0.85rem 1rem;
+}
+
+.table tbody tr {
+    transition: background 0.15s ease;
+}
+
+.table tbody tr:hover {
+    background: var(--brand-green-light);
+}
+
+.table td { vertical-align: middle; padding: 0.75rem 1rem; }
+
+/* =========================================================================
+   FORMULAIRES
+========================================================================= */
+
+.form-control, .form-select {
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--ink-300);
+    padding: 0.55rem 0.85rem;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--brand-green);
+    box-shadow: 0 0 0 3px rgba(11, 138, 74, 0.15);
+}
+
+/* =========================================================================
+   ALERTES / MESSAGES
+========================================================================= */
+
+.alert {
+    border: none;
+    border-radius: var(--radius-md);
+    border-left: 4px solid var(--brand-green);
+    box-shadow: var(--shadow-sm);
+}
+
+/* =========================================================================
+   HERO / PAGE D'ACCUEIL
+========================================================================= */
+
+.hero-section {
+    background: var(--gradient-brand);
+    position: relative;
+    overflow: hidden;
+    color: #026fc9;
+}
+
+.hero-section::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(circle at 15% 20%, rgba(255, 107, 53, 0.25), transparent 40%),
+        radial-gradient(circle at 85% 80%, rgba(255, 255, 255, 0.12), transparent 45%);
+    pointer-events: none;
+}
+
+.hero-section .container { position: relative; z-index: 1; }
+
+/* =========================================================================
+   CHIFFRES ANIMÉS (compteurs)
+========================================================================= */
+
+.counter {
+    font-family: "Poppins", sans-serif;
+    font-weight: 800;
+}
+
+/* =========================================================================
+   MISE EN PAGE CARTE
+========================================================================= */
+
+#map, .map-container {
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+}
+
+.leaflet-popup-content-wrapper {
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-lg);
+}
+
+.popup-title {
+    font-family: "Poppins", sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: 6px;
+}
+
+.popup-row { font-size: 0.85rem; margin-bottom: 3px; }
+.popup-label { font-weight: 600; color: var(--ink-500); }
+
+.leaflet-bar a {
+    border-radius: 6px !important;
+}
+
+.active-filter {
+    background: var(--gradient-brand) !important;
+    color: #fff !important;
+    border-color: transparent !important;
+}
+
+/* =========================================================================
+   TOASTS
+========================================================================= */
+
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to   { transform: translateY(0); opacity: 1; }
+}
+
+/* =========================================================================
+   ANIMATIONS D'APPARITION AU SCROLL
+========================================================================= */
+
+.reveal-on-scroll {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.reveal-on-scroll.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* =========================================================================
+   BOUTON RETOUR EN HAUT
+========================================================================= */
+
+#backToTop {
+    position: fixed;
+    right: 22px;
+    bottom: 22px;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: var(--gradient-accent);
+    color: #fff;
+    border: none;
+    box-shadow: 0 8px 20px rgba(255, 107, 53, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: all 0.25s ease;
+    z-index: 1200;
+}
+
+#backToTop.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+#backToTop:hover { transform: translateY(-3px); }
+
+/* =========================================================================
+   BARRE DE PROGRESSION DE SCROLL
+========================================================================= */
+
+#scrollProgress {
+    position: fixed;
+    top: 0; left: 0;
+    height: 3px;
+    background: var(--gradient-accent);
+    z-index: 1500;
+    width: 0%;
+    transition: width 0.1s ease;
+}
+
+/* =========================================================================
+   FOOTER
+========================================================================= */
+
+.footer {
+    background: var(--gradient-brand);
+}
+
+.footer a:hover { color: #fff !important; }
+
+/* =========================================================================
+   IMPRESSION (utilisé par le bouton PDF du tableau de bord)
+========================================================================= */
+
+@media print {
+    .main-navbar, .health-topbar, .footer, .export-buttons,
+    #backToTop, #scrollProgress, .btn { display: none !important; }
+
+    body { background: #fff !important; }
+
+    .card, .stat-card {
+        box-shadow: none !important;
+        border: 1px solid var(--ink-300) !important;
+        break-inside: avoid;
+    }
+}
+
+/* =========================================================================
+   RESPONSIVE
+========================================================================= */
+
+@media (max-width: 768px) {
+    .stat-card .stat-value { font-size: 1.5rem; }
+    .hero-section { text-align: center; }
+}

@@ -1,0 +1,3607 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Carte sanitaire - Thiès Ouest{% endblock %}
+
+{% block extra_css %}
+<!-- Leaflet MarkerCluster -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+
+<!-- DataTables -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" />
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css" />
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.bootstrap5.min.css" />
+
+<!-- Font Awesome pour les icônes supplémentaires -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+<style>
+    /* ============================================================
+       THÈMES CLAIR / SOMBRE + ARRIÈRE-PLAN
+    ============================================================ */
+
+    :root {
+        /* Thème clair */
+        --bg-body: hsla(249, 78%, 2%, 0.89);
+        --bg-card: #ffffff;
+        --bg-header: linear-gradient(135deg, #0B5E3A 0%, #0E8C5A 45%, #1CB57C 75%, #2DD4A0 100%);
+        --bg-controls: #ffffff;
+        --bg-table-header: linear-gradient(135deg, #0B5E3A, #0E8C5A);
+        --bg-table-footer: #F8FAFC;
+        --bg-sidepanel: #ffffff;
+        --bg-legend: rgba(255,255,255,0.92);
+        --bg-status: rgba(255,255,255,0.92);
+        --bg-search: #ffffff;
+        --bg-filter-btn: #ffffff;
+        --bg-filter-btn-hover: #e9ecef;
+        --bg-filter-btn-active: #0d6efd;
+        --bg-toast: #212529;
+        --text-primary: #1B2A38;
+        --text-secondary: #2C3E50;
+        --text-muted: #6C757D;
+        --text-white: #ffffff;
+        --text-filter-btn: #495057;
+        --text-filter-btn-active: #ffffff;
+        --border-color: #dee2e6;
+        --shadow: 0 8px 40px rgba(11, 138, 74, 0.10);
+        --shadow-popup: 0 2px 8px rgba(0,0,0,.2);
+        --shadow-panel: -4px 0 30px rgba(0,0,0,0.15);
+        --shadow-toast: 0 4px 16px rgba(0,0,0,0.3);
+        --cluster-bg: rgba(11, 138, 74, 0.35);
+        --cluster-color: linear-gradient(135deg, #0B8A4A, #1CB57C);
+        --cluster-shadow: 0 0 0 4px rgba(11,138,74,0.15);
+        --marker-shadow: 0 0 2px rgba(0,0,0,.5);
+        --coords-bg: rgba(255,255,255,0.92);
+        --coords-text: #495057;
+        --legend-text: #6c757d;
+        --health-tag-bg: rgba(255,255,255,0.16);
+        --health-tag-border: rgba(255,255,255,0.25);
+        --mini-badge-bg: rgba(255,255,255,0.14);
+        --mini-badge-border: rgba(255,255,255,0.22);
+        --btn-outline-bg: rgba(255,255,255,0.12);
+        --btn-outline-border: rgba(255,255,255,0.35);
+        --btn-outline-hover-bg: rgba(255,255,255,0.28);
+        --btn-outline-hover-border: rgba(255,255,255,0.6);
+        --btn-primary-bg: #FF6B35;
+        --btn-primary-hover: #e85a2a;
+        --table-stripe: #F8FAFC;
+        --table-hover: #F0F7FF;
+        --table-highlight: #EBF5FB;
+        --table-border: #E9ECEF;
+        --badge-type-text: #ffffff;
+        --badge-statut-text: #ffffff;
+        --scrollbar-track: #F1F3F5;
+        --scrollbar-thumb: #D1D5DB;
+        --scrollbar-thumb-hover: #8A97A5;
+        --toast-text: #ffffff;
+        --toast-border: #0d6efd;
+        --panel-overlay: rgba(0,0,0,0.3);
+        --print-display: block;
+        --map-bg: #e5e3df;
+        --legend-item-hover: #f1f3f5;
+        --isochrone-bg: #ffffff;
+        --isochrone-text: #0d6efd;
+        --buffer-control-bg: #ffffff;
+        --buffer-control-border: #dee2e6;
+        --stat-badge-bg: #f8f9fa;
+        --stat-badge-text: #495057;
+        --stat-badge-border: #dee2e6;
+        --search-icon-color: #6c757d;
+        --clear-btn-color: #adb5bd;
+        --clear-btn-hover: #dc3545;
+        --filter-btn-badge: rgba(0,0,0,0.1);
+        --filter-btn-active-badge: rgba(255,255,255,0.3);
+        --popup-title-color: #1B2A38;
+        --popup-label-color: #2C3E50;
+        --popup-badge-text: #ffffff;
+        --panel-text: #1B2A38;
+        --panel-muted: #6C757D;
+        --panel-border: #f1f3f5;
+        --panel-card-bg: #ffffff;
+        --panel-card-border: #dee2e6;
+        --panel-small: #6C757D;
+        --panel-strong: #1B2A38;
+        --theme-selector-bg: rgba(255,255,255,0.15);
+        --theme-selector-border: rgba(255,255,255,0.2);
+        --theme-btn-border: rgba(255,255,255,0.3);
+        --theme-btn-active-border: #FFD54F;
+        --theme-btn-check: #ffffff;
+        --table-footer-text: #6C757D;
+        --table-footer-strong: #2C3E50;
+        --dt-button-text: #495057;
+        --dt-button-border: #dee2e6;
+        --dt-button-hover-bg: #0d6efd;
+        --dt-button-hover-text: #ffffff;
+        --dt-button-csv-border: hsl(133, 88%, 3%);
+        --dt-button-csv-color: #28a745;
+        --dt-button-excel-border: #1E88E5;
+        --dt-button-excel-color: #1E88E5;
+        --dt-button-pdf-border: #dc3545;
+        --dt-button-pdf-color: #dc3545;
+        --dt-button-print-border: #6c757d;
+        --dt-button-print-color: #6c757d;
+        --quick-stat-bg: #ffffff;
+        --quick-stat-text: #1B2A38;
+        --quick-stat-muted: #6C757D;
+        --quick-stat-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        --quick-stat-hover-shadow: 0 8px 25px rgba(0,0,0,0.12);
+        --quick-stat-border: rgba(0,0,0,0.03);
+        --distance-color: #0d6efd;
+        --distance-line-color: #0d6efd;
+        --map-container-bg: rgba(255,255,255,0.16);
+        --map-container-border: rgba(255,255,255,0.22);
+        --map-container-shadow: 0 30px 80px rgba(0,0,0,0.20);
+        --map-blur: blur(0px);
+        --map-overlay-opacity: 0.85;
+
+        /* Panneaux "verre dépoli" — laissent transparaître le fond partout sur la page */
+        --glass-panel-bg: rgba(255, 255, 255, 0.58);
+        --glass-panel-border: rgba(255, 255, 255, 0.45);
+        --glass-card-bg: rgba(255, 255, 255, 0.88);
+    }
+
+    /* Thème sombre */
+    [data-theme="dark"] {
+        --bg-body: #0F141A;
+        --bg-card: #1A2332;
+        --bg-header: linear-gradient(135deg, #0A2A1A 0%, #0B4A2A 45%, #1A6A4A 75%, #2A8A5A 100%);
+        --bg-controls: #1A2332;
+        --bg-table-header: linear-gradient(135deg, #1E2A3A, #2A3A4A);
+        --bg-table-footer: #1E2A3A;
+        --bg-sidepanel: #1A2332;
+        --bg-legend: rgba(26,35,50,0.92);
+        --bg-status: rgba(26,35,50,0.92);
+        --bg-search: #1A2332;
+        --bg-filter-btn: #1A2332;
+        --bg-filter-btn-hover: #2A3A4A;
+        --bg-filter-btn-active: #0d6efd;
+        --bg-toast: #2A3A4A;
+        --text-primary: #E8EDF2;
+        --text-secondary: #CCD6E0;
+        --text-muted: #8A97A5;
+        --text-white: #ffffff;
+        --text-filter-btn: #8A97A5;
+        --text-filter-btn-active: #ffffff;
+        --border-color: rgba(255,255,255,0.08);
+        --shadow: 0 8px 40px rgba(0,0,0,0.30);
+        --shadow-popup: 0 2px 8px rgba(0,0,0,0.4);
+        --shadow-panel: -4px 0 30px rgba(0,0,0,0.4);
+        --shadow-toast: 0 4px 16px rgba(0,0,0,0.5);
+        --cluster-bg: rgba(11, 138, 74, 0.20);
+        --cluster-color: linear-gradient(135deg, #0A5A3A, #1A8A5A);
+        --cluster-shadow: 0 0 0 4px rgba(11,138,74,0.08);
+        --marker-shadow: 0 0 2px rgba(0,0,0,.8);
+        --coords-bg: rgba(26, 35, 50, 0.92);
+        --coords-text: #CCD6E0;
+        --legend-text: #8A97A5;
+        --health-tag-bg: rgba(0,0,0,0.25);
+        --health-tag-border: rgba(255,255,255,0.10);
+        --mini-badge-bg: rgba(0,0,0,0.25);
+        --mini-badge-border: rgba(255,255,255,0.08);
+        --btn-outline-bg: rgba(0,0,0,0.25);
+        --btn-outline-border: rgba(255,255,255,0.15);
+        --btn-outline-hover-bg: rgba(255,255,255,0.15);
+        --btn-outline-hover-border: rgba(255,255,255,0.30);
+        --btn-primary-bg: #FF6B35;
+        --btn-primary-hover: #e85a2a;
+        --table-stripe: #1A2332;
+        --table-hover: #2A3A4A;
+        --table-highlight: #1A3A5A;
+        --table-border: rgba(255,255,255,0.06);
+        --badge-type-text: #ffffff;
+        --badge-statut-text: #ffffff;
+        --scrollbar-track: #1A2332;
+        --scrollbar-thumb: #3A4A5A;
+        --scrollbar-thumb-hover: #5A6A7A;
+        --toast-text: #E8EDF2;
+        --toast-border: #0d6efd;
+        --panel-overlay: rgba(0,0,0,0.6);
+        --print-display: none;
+        --map-bg: #1A2332;
+        --legend-item-hover: #2A3A4A;
+        --isochrone-bg: #1A2332;
+        --isochrone-text: #4A9AE0;
+        --buffer-control-bg: #1A2332;
+        --buffer-control-border: rgba(255,255,255,0.10);
+        --stat-badge-bg: #1A2332;
+        --stat-badge-text: #8A97A5;
+        --stat-badge-border: rgba(255,255,255,0.08);
+        --search-icon-color: #8A97A5;
+        --clear-btn-color: #5A6A7A;
+        --clear-btn-hover: #E5484D;
+        --filter-btn-badge: rgba(255,255,255,0.10);
+        --filter-btn-active-badge: rgba(255,255,255,0.25);
+        --popup-title-color: #E8EDF2;
+        --popup-label-color: #CCD6E0;
+        --popup-badge-text: #ffffff;
+        --panel-text: #E8EDF2;
+        --panel-muted: #8A97A5;
+        --panel-border: rgba(255,255,255,0.06);
+        --panel-card-bg: #1A2332;
+        --panel-card-border: rgba(255,255,255,0.06);
+        --panel-small: #8A97A5;
+        --panel-strong: #E8EDF2;
+        --theme-selector-bg: rgba(0,0,0,0.30);
+        --theme-selector-border: rgba(255,255,255,0.10);
+        --theme-btn-border: rgba(255,255,255,0.15);
+        --theme-btn-active-border: #FFD54F;
+        --theme-btn-check: #ffffff;
+        --table-footer-text: #8A97A5;
+        --table-footer-strong: #CCD6E0;
+        --dt-button-text: #8A97A5;
+        --dt-button-border: rgba(255,255,255,0.10);
+        --dt-button-hover-bg: #0d6efd;
+        --dt-button-hover-text: #ffffff;
+        --dt-button-csv-border: #28a745;
+        --dt-button-csv-color: #28a745;
+        --dt-button-excel-border: #1E88E5;
+        --dt-button-excel-color: #1E88E5;
+        --dt-button-pdf-border: #dc3545;
+        --dt-button-pdf-color: #dc3545;
+        --dt-button-print-border: #6c757d;
+        --dt-button-print-color: #6c757d;
+        --quick-stat-bg: #1A2332;
+        --quick-stat-text: #E8EDF2;
+        --quick-stat-muted: #8A97A5;
+        --quick-stat-shadow: 0 2px 8px rgba(0,0,0,0.20);
+        --quick-stat-hover-shadow: 0 8px 25px rgba(0,0,0,0.35);
+        --quick-stat-border: rgba(255,255,255,0.04);
+        --distance-color: #4A9AE0;
+        --distance-line-color: #4A9AE0;
+        --map-container-bg: rgba(10, 14, 20, 0.35);
+        --map-container-border: rgba(255,255,255,0.10);
+        --map-container-shadow: 0 30px 80px rgba(0,0,0,0.50);
+        --map-blur: blur(0px);
+        --map-overlay-opacity: 0.90;
+
+        /* Panneaux "verre dépoli" — thème sombre */
+        --glass-panel-bg: rgba(18, 26, 38, 0.55);
+        --glass-panel-border: rgba(255, 255, 255, 0.10);
+        --glass-card-bg: rgba(18, 26, 38, 0.88);
+    }
+
+    /* ============================================================
+       ARRIÈRE-PLAN DE LA PAGE AVEC IMAGE
+    ============================================================ */
+
+    /* Fond d'écran fixe */
+    body {
+        background: var(--bg-body) !important;
+        transition: background 0.4s ease, color 0.4s ease;
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+        position: relative;
+    }
+
+    /* Image de fond en arrière-plan — bien plus lumineuse et visible */
+    body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: url("{% static 'images/sante.jfif' %}") center center / cover no-repeat;
+        filter: brightness(0.95) saturate(1.2) contrast(1.05);
+        z-index: -1;
+        background-attachment: fixed;
+    }
+
+    /* Overlay léger : vignettage discret pour préserver la lisibilité en haut/bas,
+       tout en laissant le centre de l'image net et visible */
+    body::after {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background:
+            radial-gradient(ellipse at center, transparent 35%, rgba(4, 18, 12, 0.22) 100%),
+            linear-gradient(180deg,
+                rgba(4, 16, 10, 0.28) 0%,
+                transparent 20%,
+                transparent 72%,
+                rgba(4, 16, 10, 0.32) 100%);
+        z-index: -1;
+        background-attachment: fixed;
+    }
+
+    /* ============================================================
+       SELECTEUR DE THÈME FLOTTANT
+    ============================================================ */
+
+    .theme-selector-floating {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px 6px 16px;
+        border-radius: 30px;
+        background: var(--theme-selector-bg);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid var(--theme-selector-border);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+        transition: all 0.3s ease;
+    }
+
+    .theme-selector-floating:hover {
+        background: rgba(255, 255, 255, 0.25);
+    }
+
+    .theme-selector-floating .theme-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.85);
+        margin-right: 4px;
+        letter-spacing: 0.5px;
+    }
+
+    .theme-selector-floating .theme-btn {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        border: 2px solid var(--theme-btn-border);
+        cursor: pointer;
+        transition: all 0.25s ease;
+        padding: 0;
+        flex-shrink: 0;
+        position: relative;
+    }
+
+    .theme-selector-floating .theme-btn:hover {
+        transform: scale(1.12);
+        border-color: rgba(255, 255, 255, 0.6);
+    }
+
+    .theme-selector-floating .theme-btn.active-theme {
+        border-color: var(--theme-btn-active-border);
+        box-shadow: 0 0 0 3px rgba(255, 213, 79, 0.3);
+    }
+
+    .theme-selector-floating .theme-btn .check-mark {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: var(--theme-btn-check);
+        font-size: 12px;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+    }
+
+    .theme-selector-floating .theme-btn.active-theme .check-mark {
+        opacity: 1;
+    }
+
+    .theme-selector-floating .theme-btn[data-theme="light"] {
+        background: #E8EDF2;
+        border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .theme-selector-floating .theme-btn[data-theme="dark"] {
+        background: #1A2332;
+        border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .theme-selector-floating .theme-btn[data-theme="light"] .check-mark {
+        color: #1A2332;
+    }
+
+    .theme-selector-floating .theme-btn[data-theme="dark"] .check-mark {
+        color: #E8EDF2;
+    }
+
+    /* ============================================================
+       STYLES PRINCIPAUX DE LA CARTE (verre dépoli premium)
+    ============================================================ */
+
+    .map-container {
+        background: var(--map-container-bg) !important;
+        backdrop-filter: blur(14px) saturate(160%);
+        -webkit-backdrop-filter: blur(14px) saturate(160%);
+        border-radius: 22px;
+        overflow: hidden;
+        border: 1px solid var(--map-container-border);
+        box-shadow:
+            0 40px 90px rgba(0, 0, 0, 0.28),
+            0 8px 24px rgba(0, 0, 0, 0.12),
+            inset 0 1px 0 rgba(255, 255, 255, 0.25);
+        transition: all 0.4s ease;
+        position: relative;
+        z-index: 2;
+    }
+
+    .map-header {
+        background: var(--bg-header) !important;
+        position: relative;
+        padding: 28px 34px;
+        border-bottom: none;
+        color: white;
+        overflow: hidden;
+        border-radius: 22px 22px 0 0;
+    }
+
+    .map-header::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image: radial-gradient(circle at 90% -10%, rgba(255,255,255,0.20), transparent 55%),
+                           radial-gradient(circle at 6% 120%, rgba(255,107,53,0.30), transparent 45%);
+        pointer-events: none;
+    }
+
+    .map-header h4 {
+        margin: 8px 0 0;
+        font-weight: 800;
+        color: #fff;
+        position: relative;
+        z-index: 1;
+        letter-spacing: -0.3px;
+        font-size: 2.0rem;
+        text-shadow: 0 2px 12px rgba(0,0,0,0.20);
+    }
+
+    .map-header h4 i {
+        color: #FFD54F;
+        text-shadow: 0 2px 8px rgba(255,213,79,0.3);
+    }
+
+    .map-header small {
+        display: block;
+        margin-top: 6px;
+        color: rgba(255,255,255,0.92) !important;
+        position: relative;
+        z-index: 1;
+        font-size: 1.0rem;
+        font-weight: 400;
+        letter-spacing: 0.2px;
+        text-shadow: 0 1px 6px rgba(0,0,0,0.15);
+    }
+
+    .map-header small i {
+        color: #FFD54F;
+    }
+
+    .health-page-tag {
+        display: inline-block;
+        border-radius: 24px;
+        padding: 4px 16px;
+        font-size: 0.82rem;
+        font-weight: 500;
+        background: var(--health-tag-bg);
+        border: 1px solid var(--health-tag-border);
+        color: #ffffff;
+        backdrop-filter: blur(4px);
+        letter-spacing: 0.3px;
+    }
+
+    .health-page-tag i {
+        color: #FF6B6B;
+        margin-right: 6px;
+    }
+
+    .map-header-badges {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+    }
+
+    .map-header-badges .mini-badge {
+        border-radius: 24px;
+        padding: 6px 16px;
+        font-size: 0.88rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--mini-badge-bg);
+        border: 1px solid var(--mini-badge-border);
+        color: #ffffff;
+        font-weight: 500;
+        backdrop-filter: blur(6px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+    }
+
+    .map-header-badges .mini-badge:hover {
+        background: rgba(255,255,255,0.30);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+    }
+
+    .map-header-badges .mini-badge i {
+        color: #FFD54F;
+        font-size: 1.0rem;
+    }
+
+    /* ============================================================
+       CONTROLES DE LA CARTE (verre dépoli)
+    ============================================================ */
+
+    .map-controls {
+        background: var(--glass-panel-bg) !important;
+        backdrop-filter: blur(18px) saturate(160%);
+        -webkit-backdrop-filter: blur(18px) saturate(160%);
+        border-color: var(--glass-panel-border) !important;
+        padding: 16px 24px;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 14px;
+        transition: background 0.4s ease, border-color 0.4s ease;
+        border-bottom: 2px solid #0B8A4A;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .filter-group .btn {
+        border-radius: 24px;
+        font-size: 0.88rem;
+        padding: 6px 20px;
+        border: 2px solid var(--border-color);
+        transition: all 0.25s ease;
+        font-weight: 600;
+        background: var(--bg-filter-btn);
+        color: var(--text-filter-btn);
+    }
+
+    .filter-group .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .filter-group .btn.active-filter {
+        background: #0B8A4A !important;
+        color: #ffffff !important;
+        border-color: #0B8A4A !important;
+        box-shadow: 0 4px 16px rgba(11, 138, 74, 0.30);
+    }
+
+    .filter-group .btn .badge-count {
+        border-radius: 14px;
+        padding: 0 8px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        margin-left: 6px;
+        background: var(--filter-btn-badge);
+    }
+
+    .filter-group .btn.active-filter .badge-count {
+        background: rgba(255,255,255,0.25);
+        color: #ffffff;
+    }
+
+    .search-wrapper {
+        display: flex;
+        align-items: center;
+        border: 2px solid var(--border-color);
+        border-radius: 28px;
+        padding: 4px 16px;
+        transition: all 0.3s ease;
+        min-width: 220px;
+        background: var(--bg-search);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    .search-wrapper:focus-within {
+        border-color: #0B8A4A;
+        box-shadow: 0 0 0 4px rgba(11, 138, 74, 0.15);
+    }
+
+    .search-wrapper input {
+        border: none;
+        outline: none;
+        padding: 8px 0;
+        width: 100%;
+        font-size: 0.95rem;
+        background: transparent;
+        color: var(--text-primary);
+        font-weight: 500;
+    }
+
+    .search-wrapper .search-icon {
+        margin-right: 10px;
+        color: var(--search-icon-color);
+        font-size: 1.1rem;
+    }
+
+    .search-wrapper .clear-btn {
+        border: none;
+        background: transparent;
+        display: none;
+        padding: 0 4px;
+        cursor: pointer;
+        font-size: 1.1rem;
+        color: var(--clear-btn-color);
+    }
+
+    .search-wrapper .clear-btn:hover {
+        color: var(--clear-btn-hover);
+    }
+
+    .stat-badge {
+        padding: 8px 18px;
+        border-radius: 24px;
+        font-size: 0.92rem;
+        border: 2px solid var(--stat-badge-border);
+        font-weight: 600;
+        background: var(--stat-badge-bg);
+        color: var(--stat-badge-text);
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    }
+
+    .stat-badge i {
+        font-size: 1.1rem;
+    }
+
+    .stat-badge .text-primary {
+        color: #0B8A4A !important;
+    }
+
+    .stat-badge .text-success {
+        color: #1CB57C !important;
+    }
+
+    /* ============================================================
+       CARTE
+    ============================================================ */
+
+    #map {
+        width: 100%;
+        height: 550px;
+        border-radius: 0 0 10px 10px;
+        z-index: 1;
+        transition: background 0.4s ease;
+        background: var(--map-bg) !important;
+    }
+
+    /* ============================================================
+       LÉGENDE
+    ============================================================ */
+
+    .legend {
+        position: absolute;
+        bottom: 25px;
+        right: 15px;
+        padding: 12px 15px;
+        border-radius: 8px;
+        z-index: 1000;
+        min-width: 170px;
+        background: var(--bg-legend);
+        box-shadow: var(--shadow-popup);
+        color: var(--text-primary);
+        transition: background 0.4s ease, box-shadow 0.4s ease, color 0.4s ease;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.10);
+    }
+
+    .legend-title {
+        font-weight: 700;
+        margin-bottom: 8px;
+        font-size: 0.9rem;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 5px;
+        font-size: 0.8rem;
+        cursor: pointer;
+        padding: 2px 4px;
+        border-radius: 4px;
+        transition: background 0.2s ease;
+        color: var(--text-secondary);
+    }
+
+    .legend-item:hover {
+        background: var(--legend-item-hover);
+    }
+
+    .legend-color {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        border: 1px solid #fff;
+        flex-shrink: 0;
+    }
+
+    /* ============================================================
+       STATUT DE LA CARTE
+    ============================================================ */
+
+    .map-status {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        z-index: 1000;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        background: var(--bg-status);
+        color: var(--text-primary);
+        box-shadow: var(--shadow-popup);
+        transition: background 0.4s ease, color 0.4s ease, box-shadow 0.4s ease;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.10);
+    }
+
+    /* ============================================================
+       POPUP
+    ============================================================ */
+
+    .popup-title {
+        font-weight: 700;
+        font-size: 15px;
+        margin-bottom: 8px;
+        color: var(--popup-title-color);
+    }
+
+    .popup-row {
+        margin-bottom: 4px;
+        color: var(--text-secondary);
+    }
+
+    .popup-label {
+        font-weight: 600;
+        color: var(--popup-label-color);
+    }
+
+    /* ============================================================
+       TABLEAU (verre dépoli)
+    ============================================================ */
+
+    .table-section {
+        border-radius: 16px;
+        margin-top: 30px;
+        overflow: hidden;
+        border: 1px solid var(--glass-panel-border);
+        animation: fadeUp 0.6s ease forwards;
+        opacity: 0;
+        background: var(--glass-card-bg);
+        backdrop-filter: blur(20px) saturate(150%);
+        -webkit-backdrop-filter: blur(20px) saturate(150%);
+        box-shadow: 0 20px 50px rgba(0,0,0,0.18);
+        transition: background 0.4s ease, border-color 0.4s ease;
+    }
+
+    .table-section .table-header {
+        padding: 16px 22px;
+        border-bottom: 2px solid var(--border-color);
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        background: var(--bg-table-header);
+        transition: background 0.4s ease, border-color 0.4s ease;
+    }
+
+    .table-section .table-header h5 {
+        font-weight: 700;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #ffffff;
+    }
+
+    .table-section .table-header h5 i {
+        color: #FFD54F;
+    }
+
+    /* ============================================================
+       PANEL LATÉRAL (verre dépoli)
+    ============================================================ */
+
+    #sidePanel {
+        position: fixed;
+        right: -420px;
+        top: 80px;
+        width: 400px;
+        max-height: calc(100vh - 100px);
+        border-radius: 16px 0 0 16px;
+        transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 1000;
+        overflow-y: auto;
+        padding: 20px;
+        background: var(--glass-card-bg);
+        backdrop-filter: blur(22px) saturate(150%);
+        -webkit-backdrop-filter: blur(22px) saturate(150%);
+        color: var(--text-primary);
+        box-shadow: var(--shadow-panel);
+        border: 1px solid var(--glass-panel-border);
+        border-right: none;
+    }
+
+    #sidePanel.open {
+        right: 0;
+    }
+
+    #sidePanel .panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid var(--panel-border);
+    }
+
+    #sidePanel .panel-header h5 {
+        color: var(--text-primary);
+    }
+
+    #sidePanel .panel-close {
+        border: none;
+        background: transparent;
+        font-size: 1.5rem;
+        color: var(--text-muted);
+        cursor: pointer;
+        transition: color 0.2s ease;
+    }
+
+    #sidePanel .panel-close:hover {
+        color: var(--clear-btn-hover);
+    }
+
+    .panel-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 999;
+        display: none;
+        background: var(--panel-overlay);
+    }
+
+    .panel-overlay.show {
+        display: block;
+    }
+
+    /* ============================================================
+       AUTRES STYLES
+    ============================================================ */
+
+    .leaflet-popup-content-wrapper {
+        background: var(--bg-card) !important;
+        color: var(--text-primary) !important;
+        border-color: var(--border-color) !important;
+    }
+
+    .leaflet-popup-tip {
+        background: var(--bg-card) !important;
+    }
+
+    .leaflet-control-layers {
+        background: var(--bg-card) !important;
+        border-color: var(--border-color) !important;
+        border-radius: 10px !important;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.18) !important;
+    }
+
+    .leaflet-control-layers label {
+        color: var(--text-primary) !important;
+    }
+
+    .coords-control {
+        background: var(--coords-bg) !important;
+        color: var(--coords-text) !important;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 0.72rem;
+        font-family: 'Courier New', monospace;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+        white-space: nowrap;
+        transition: background 0.4s ease, color 0.4s ease;
+        border: 1px solid rgba(255,255,255,0.10);
+        backdrop-filter: blur(4px);
+    }
+
+    .marker-cluster-health {
+        background: var(--cluster-bg);
+        transition: background 0.4s ease;
+    }
+    .marker-cluster-health div {
+        background: var(--cluster-color);
+        color: white;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        box-shadow: var(--cluster-shadow);
+        transition: background 0.4s ease, box-shadow 0.4s ease;
+    }
+
+    .etablissement-marker {
+        transition: transform 0.2s ease, fill-opacity 0.2s ease;
+    }
+    .etablissement-marker:hover {
+        transform: scale(1.15);
+        cursor: pointer;
+        fill-opacity: 1 !important;
+    }
+
+    .current-location-marker {
+        animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.3); opacity: 0.7; }
+    }
+
+    .custom-toast {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        padding: 12px 24px;
+        border-radius: 8px;
+        z-index: 10000;
+        animation: slideUp 0.3s ease;
+        max-width: 400px;
+        font-size: 0.9rem;
+        border-left: 4px solid var(--toast-border);
+        background: var(--bg-toast);
+        color: var(--toast-text);
+        box-shadow: var(--shadow-toast);
+        transition: background 0.4s ease, color 0.4s ease, box-shadow 0.4s ease;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .custom-toast button {
+        background: transparent;
+        border: none;
+        color: var(--toast-text);
+        margin-left: 15px;
+        font-size: 1.2rem;
+        opacity: 0.6;
+        cursor: pointer;
+        transition: opacity 0.2s ease;
+    }
+
+    .custom-toast button:hover {
+        opacity: 1;
+    }
+
+    .isochrone-result {
+        position: absolute;
+        bottom: 100px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 15px 25px;
+        border-radius: 12px;
+        z-index: 2000;
+        text-align: center;
+        min-width: 250px;
+        display: none;
+        background: var(--isochrone-bg);
+        color: var(--text-primary);
+        box-shadow: var(--shadow-popup);
+        transition: background 0.4s ease, color 0.4s ease, box-shadow 0.4s ease;
+    }
+
+    .isochrone-result .time {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--isochrone-text);
+    }
+
+    .isochrone-result .label {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+    }
+
+    .measure-result-badge {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        z-index: 1000;
+        background: #212529;
+        color: white;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        box-shadow: 0 4px 14px rgba(0,0,0,.3);
+        display: none;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .measure-result-badge strong {
+        color: #FF9A56;
+        font-size: 1rem;
+    }
+
+    .measure-result-badge .btn-close-measure {
+        background: transparent;
+        border: none;
+        color: white;
+        opacity: 0.7;
+        cursor: pointer;
+    }
+
+    .distance-tool-panel {
+        background: var(--glass-card-bg);
+        backdrop-filter: blur(18px) saturate(150%);
+        -webkit-backdrop-filter: blur(18px) saturate(150%);
+        border-radius: 12px;
+        padding: 16px 20px;
+        box-shadow: var(--shadow-panel);
+        border: 1px solid var(--glass-panel-border);
+        margin-top: 10px;
+        display: none;
+        animation: slideDown 0.3s ease;
+    }
+
+    .distance-tool-panel.visible {
+        display: block;
+    }
+
+    .distance-tool-panel .dt-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    .distance-tool-panel .dt-header h6 {
+        font-weight: 700;
+        margin: 0;
+        color: var(--text-primary);
+    }
+
+    .distance-tool-panel .dt-header .btn-close-dt {
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        font-size: 1.2rem;
+        cursor: pointer;
+        transition: color 0.2s ease;
+    }
+
+    .distance-tool-panel .dt-header .btn-close-dt:hover {
+        color: var(--clear-btn-hover);
+    }
+
+    .distance-tool-panel .dt-status {
+        padding: 8px 14px;
+        border-radius: 8px;
+        background: var(--bg-body);
+        border: 1px solid var(--border-color);
+        margin-bottom: 12px;
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .distance-tool-panel .dt-result {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 12px 16px;
+        border-radius: 10px;
+        background: var(--bg-body);
+        border: 1px solid var(--border-color);
+        display: none;
+    }
+
+    .distance-tool-panel .dt-result.visible {
+        display: flex;
+    }
+
+    .distance-tool-panel .dt-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 12px;
+        flex-wrap: wrap;
+    }
+
+    @keyframes slideDown {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideUp {
+        from { transform: translateY(100px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    /* ============================================================
+       RESPONSIVE
+    ============================================================ */
+
+    @media (max-width: 768px) {
+        #map { height: 400px; }
+        .map-header {
+            padding: 18px 20px;
+        }
+        .map-header h4 {
+            font-size: 1.4rem;
+        }
+        .map-header small {
+            font-size: 0.85rem;
+        }
+        .map-controls {
+            padding: 12px 16px;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 10px;
+        }
+        .filter-group { justify-content: center; }
+        .search-wrapper { min-width: 100%; }
+        .theme-selector-floating {
+            top: 10px;
+            right: 10px;
+            padding: 4px 8px 4px 12px;
+        }
+        .theme-selector-floating .theme-label {
+            font-size: 0.6rem;
+        }
+        .theme-selector-floating .theme-btn {
+            width: 24px;
+            height: 24px;
+        }
+        .theme-selector-floating .theme-btn .check-mark {
+            font-size: 9px;
+        }
+        #sidePanel {
+            width: 100%;
+            right: -100%;
+            max-height: calc(100vh - 60px);
+            top: 60px;
+            border-radius: 0;
+        }
+        #sidePanel.open { right: 0; }
+        .legend {
+            bottom: 15px;
+            right: 10px;
+            min-width: 140px;
+            padding: 8px 10px;
+        }
+        .isochrone-result {
+            min-width: 180px;
+            padding: 12px 16px;
+            bottom: 80px;
+        }
+        .isochrone-result .time { font-size: 1.5rem; }
+    }
+
+    @media (max-width: 480px) {
+        #map { height: 350px; }
+        .map-header {
+            padding: 14px 16px;
+        }
+        .map-header h4 {
+            font-size: 1.2rem;
+        }
+        .map-header small {
+            font-size: 0.78rem;
+        }
+        .map-header-badges .mini-badge {
+            font-size: 0.72rem;
+            padding: 4px 10px;
+        }
+        .filter-group .btn {
+            font-size: 0.72rem;
+            padding: 4px 12px;
+        }
+        .stat-badge {
+            font-size: 0.72rem;
+            padding: 4px 10px;
+        }
+        .search-wrapper input {
+            font-size: 0.85rem;
+        }
+        .distance-tool-panel .dt-result {
+            flex-direction: column;
+            text-align: center;
+        }
+        .distance-tool-panel .dt-result .dt-destination {
+            text-align: center;
+        }
+    }
+
+    @media print {
+        .health-topbar, .main-navbar, footer, .map-controls,
+        .export-buttons, .health-page-tag, #sidePanel, .panel-overlay,
+        .leaflet-control-layers, .leaflet-control-zoom, .theme-selector-floating,
+        .quick-stats, .measure-result-badge, .distance-tool-panel {
+            display: none !important;
+        }
+        body::before, body::after {
+            display: none !important;
+        }
+        .map-container {
+            background: white !important;
+            backdrop-filter: none !important;
+            box-shadow: none !important;
+        }
+        #map { height: 80vh !important; }
+        .legend { display: var(--print-display) !important; }
+        .table-section { page-break-inside: avoid; }
+        .table-section .table-wrapper { overflow: visible !important; }
+    }
+
+    /* Scrollbar personnalisée */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--scrollbar-track); border-radius: 10px; }
+    ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-thumb-hover); }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ============================================================
+    SELECTEUR DE THÈME FLOTTANT
+============================================================ -->
+
+<div class="theme-selector-floating" id="themeSelectorFloating">
+    <span class="theme-label"><i class="bi bi-palette"></i></span>
+    <button class="theme-btn active-theme" data-theme="light" title="Clair">
+        <span class="check-mark">✓</span>
+    </button>
+    <button class="theme-btn" data-theme="dark" title="Sombre">
+        <span class="check-mark">✓</span>
+    </button>
+</div>
+
+<!-- ============================================================
+    CONTENU PRINCIPAL
+============================================================ -->
+
+<div class="container-fluid px-4 py-3">
+
+    <div class="map-container">
+
+        <!-- ================= HEADER ================= -->
+        <div class="map-header">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <span class="health-page-tag">
+                        <i class="bi bi-heart-pulse-fill"></i>
+                        Ministère de la Santé et de l'Action Sociale
+                    </span>
+                    <h4>
+                        <i class="bi bi-map"></i>
+                        Carte sanitaire de Thiès Ouest
+                    </h4>
+                    <small>
+                        <i class="bi bi-info-circle"></i>
+                        Établissements de santé recensés — cliquez sur un établissement pour plus d'informations
+                    </small>
+                    <div class="map-header-badges">
+                        <span class="mini-badge"><i class="bi bi-geo-alt-fill"></i> <span id="headerCount">{{ nb_etablissements|default:'0' }}</span> établissements</span>
+                        <span class="mini-badge"><i class="bi bi-layers-fill"></i> 3 fonds de carte</span>
+                        <span class="mini-badge"><i class="bi bi-diagram-3-fill"></i> Regroupement intelligent</span>
+                        <span class="mini-badge"><i class="bi bi-rulers"></i> Mesure de distance</span>
+                        <span class="mini-badge"><i class="bi bi-bounding-box"></i> Limite administrative</span>
+                    </div>
+                </div>
+                <div class="col-md-6 text-md-end mt-3 mt-md-0">
+                    <button class="btn btn-sm btn-outline-primary me-1 mb-1" onclick="toggleSidePanel()">
+                        <i class="bi bi-layout-sidebar"></i> Panneau
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary me-1 mb-1" onclick="rechargerCarte()">
+                        <i class="bi bi-arrow-clockwise"></i> Actualiser
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger me-1 mb-1" onclick="clearAllLayers()">
+                        <i class="bi bi-eraser"></i> Effacer
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary me-1 mb-1" onclick="imprimerCarte()">
+                        <i class="bi bi-printer"></i> Imprimer
+                    </button>
+                    <a href="{% url 'sante:dashboard' %}" class="btn btn-primary btn-sm mb-1">
+                        <i class="bi bi-bar-chart"></i> Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= CONTROLES ================= -->
+        <div class="map-controls">
+
+            <!-- Filtres par type -->
+            <div class="filter-group" id="typeFilters">
+                <button class="btn active-filter" data-type="all">
+                    <i class="bi bi-grid"></i> Tous
+                    <span class="badge-count" id="countAll">0</span>
+                </button>
+                {% for type in types_list %}
+                <button class="btn" data-type="{{ type.libelle }}">
+                    <span class="legend-color" style="background:{{ type.couleur }};display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;"></span>
+                    {{ type.libelle }}
+                    <span class="badge-count" id="count_{{ type.libelle|slugify }}">0</span>
+                </button>
+                {% endfor %}
+            </div>
+
+            <!-- Recherche -->
+            <div class="search-wrapper">
+                <i class="bi bi-search search-icon"></i>
+                <input type="text" id="searchInput" placeholder="Rechercher un établissement..." autocomplete="off">
+                <button class="clear-btn" id="searchClear"><i class="bi bi-x-circle"></i></button>
+            </div>
+
+            <!-- Statistiques -->
+            <div class="d-flex flex-wrap align-items-center gap-2 ms-auto">
+                <span class="stat-badge">
+                    <i class="bi bi-geo-alt text-primary"></i>
+                    <span id="etablissementsCount">0</span>
+                </span>
+                <span class="stat-badge">
+                    <i class="bi bi-eye text-success"></i>
+                    <span id="visibleCount">0</span> affichés
+                </span>
+            </div>
+
+        </div>
+
+        <!-- ================= CONTROLES AVANCÉS ================= -->
+        <div class="map-controls" style="border-top:1px solid var(--border-color);">
+
+            <div class="d-flex flex-wrap align-items-center gap-2">
+
+                <!-- Buffer -->
+                <div class="d-flex align-items-center gap-1" style="background:var(--buffer-control-bg);padding:4px 10px;border-radius:20px;border:1px solid var(--buffer-control-border);">
+                    <i class="bi bi-circle" style="color:#0d6efd;"></i>
+                    <label style="font-size:0.75rem;margin:0;">Rayon</label>
+                    <input type="number" id="bufferDistance" value="2" min="0.5" max="20" step="0.5" style="width:45px;border:1px solid var(--border-color);border-radius:4px;padding:2px 4px;font-size:0.8rem;background:var(--bg-search);color:var(--text-primary);">
+                    <span style="font-size:0.7rem;">km</span>
+                    <button class="btn btn-primary btn-sm" onclick="createBuffer()">
+                        <i class="bi bi-play"></i> Zone
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="clearBuffer()">
+                        <i class="bi bi-x"></i>
+                    </button>
+                </div>
+
+                <!-- Isochrone -->
+                <div class="d-flex align-items-center gap-1" style="background:var(--buffer-control-bg);padding:4px 10px;border-radius:20px;border:1px solid var(--buffer-control-border);">
+                    <i class="bi bi-people" style="color:#28a745;"></i>
+                    <label style="font-size:0.75rem;margin:0;">Isochrone</label>
+                    <input type="number" id="isochroneTime" value="10" min="5" max="60" step="5" style="width:40px;border:1px solid var(--border-color);border-radius:4px;padding:2px 4px;font-size:0.8rem;background:var(--bg-search);color:var(--text-primary);">
+                    <span style="font-size:0.7rem;">min</span>
+                    <select id="transportMode" style="border:1px solid var(--border-color);border-radius:4px;padding:2px 4px;font-size:0.75rem;background:var(--bg-search);color:var(--text-primary);">
+                        <option value="walking">🚶 Pied</option>
+                        <option value="cycling">🚲 Vélo</option>
+                        <option value="driving">🚗 Voiture</option>
+                    </select>
+                    <button class="btn btn-success btn-sm" onclick="calculerIsochrone()">
+                        <i class="bi bi-clock"></i>
+                    </button>
+                </div>
+
+                <!-- Plus proche -->
+                <button class="btn btn-warning btn-sm" onclick="trouverPlusProche()">
+                    <i class="bi bi-geo-alt"></i> Plus proche
+                </button>
+
+                <!-- Mesurer distance -->
+                <button class="btn btn-info btn-sm" id="btnDistanceTool" onclick="activerMesureManuelle()">
+                    <i class="bi bi-rulers"></i> Mesurer distance
+                </button>
+
+                <!-- Tableau -->
+                <button class="btn btn-outline-info btn-sm" onclick="toggleTableView()">
+                    <i class="bi bi-table"></i> <span id="tableToggleLabel">Voir tableau</span>
+                </button>
+
+                <!-- Heatmap -->
+                <button class="btn btn-outline-danger btn-sm" id="btnHeatmap" onclick="toggleHeatmap()">
+                    <i class="bi bi-thermometer-sun"></i> Heatmap
+                </button>
+
+                <!-- Mesure libre -->
+                <button class="btn btn-outline-dark btn-sm" id="btnMeasureToolbar" onclick="toggleMesure()">
+                    <i class="bi bi-rulers"></i> Mesurer
+                </button>
+
+                <!-- Plein écran -->
+                <button class="btn btn-outline-secondary btn-sm" id="btnFullscreenToolbar" onclick="toggleFullscreen()">
+                    <i class="bi bi-arrows-fullscreen"></i> Plein écran
+                </button>
+
+                <!-- Partager -->
+                <button class="btn btn-outline-primary btn-sm" onclick="partagerVue()">
+                    <i class="bi bi-share"></i> Partager
+                </button>
+
+                <!-- Exporter -->
+                <button class="btn btn-outline-success btn-sm" onclick="exporterCarte()">
+                    <i class="bi bi-download"></i> Exporter
+                </button>
+
+            </div>
+
+        </div>
+
+        <!-- ================= PANNEAU DE MESURE MANUELLE ================= -->
+        <div class="distance-tool-panel" id="distanceToolPanel">
+            <div class="dt-header">
+                <h6><i class="bi bi-rulers" style="color:var(--distance-color);"></i> Mesure de distance manuelle</h6>
+                <button class="btn-close-dt" onclick="fermerDistanceTool()">&times;</button>
+            </div>
+            <div class="dt-status">
+                <span class="dt-status-icon">📍</span>
+                <span class="dt-status-text" id="distanceStatusText">Cliquez sur la carte pour définir votre position</span>
+            </div>
+            <div class="dt-result" id="distanceResult">
+                <div class="dt-icon">
+                    <i class="bi bi-geo-alt"></i>
+                </div>
+                <div class="dt-info">
+                    <div class="dt-distance" id="distanceValue">--</div>
+                    <div class="dt-label">Distance jusqu'au poste de santé le plus proche</div>
+                </div>
+                <div class="dt-destination">
+                    <div class="dt-name" id="distanceTarget">--</div>
+                    <div class="dt-type" id="distanceTargetType">--</div>
+                </div>
+            </div>
+            <div class="dt-actions">
+                <button class="btn btn-outline-secondary btn-sm" onclick="annulerSelectionDistance()">
+                    <i class="bi bi-arrow-counterclockwise"></i> Annuler
+                </button>
+                <button class="btn btn-outline-secondary btn-sm" onclick="fermerDistanceTool()">
+                    <i class="bi bi-x"></i> Fermer
+                </button>
+            </div>
+        </div>
+
+        <!-- ================= CARTE ================= -->
+        <div style="position: relative;">
+
+            <div id="map"></div>
+
+            <!-- Statut -->
+            <div id="mapStatus" class="map-status">
+                <i class="bi bi-hourglass-split"></i>
+                Chargement...
+            </div>
+
+            <!-- Légende -->
+            <div class="legend">
+                <div class="legend-title">
+                    <i class="bi bi-list"></i> Types
+                </div>
+                <div class="legend-item" data-type="Hôpital">
+                    <span class="legend-color" style="background:#E53935;"></span> Hôpital
+                </div>
+                <div class="legend-item" data-type="Centre de santé">
+                    <span class="legend-color" style="background:#FB8C00;"></span> Centre de santé
+                </div>
+                <div class="legend-item" data-type="Poste de santé">
+                    <span class="legend-color" style="background:#FDD835;"></span> Poste de santé
+                </div>
+                <div class="legend-item" data-type="Clinique">
+                    <span class="legend-color" style="background:#1E88E5;"></span> Clinique
+                </div>
+                <div class="legend-item" data-type="Pharmacie">
+                    <span class="legend-color" style="background:#43A047;"></span> Pharmacie
+                </div>
+                <div class="legend-item" data-type="default">
+                    <span class="legend-color" style="background:#78909C;"></span> Autre
+                </div>
+                <hr style="margin:6px 0;">
+                <div class="legend-item" style="font-size:0.7rem;color:var(--legend-text);">
+                    <span class="legend-color" style="background:#0d6efd;border-radius:2px;width:20px;"></span> Zone de desserte
+                </div>
+                <div class="legend-item" style="font-size:0.7rem;color:var(--legend-text);">
+                    <span class="legend-color" style="background:#28a745;border-radius:2px;width:20px;"></span> Isochrone
+                </div>
+                <div class="legend-item" style="font-size:0.7rem;color:var(--legend-text);">
+                    <span class="legend-color" style="background:var(--cluster-color);border-radius:50%;width:16px;height:16px;"></span>
+                    Groupe d'établissements
+                </div>
+                <hr style="margin:6px 0;">
+                <div class="legend-item" style="font-size:0.7rem;color:var(--legend-text);">
+                    <span class="legend-color" style="background:#8B5E00;border-radius:2px;width:20px;height:3px;"></span>
+                    Limite administrative
+                </div>
+                <hr style="margin:6px 0;">
+                <div class="legend-item" style="font-size:0.7rem;color:var(--legend-text);">
+                    <span class="legend-color" style="background:var(--distance-color);border-radius:50%;width:10px;height:10px;"></span>
+                    Distance mesurée
+                </div>
+            </div>
+
+            <!-- Résultat isochrone -->
+            <div id="isochroneResult" class="isochrone-result">
+                <div class="time" id="isochroneTimeDisplay">10</div>
+                <div class="label">minutes</div>
+                <div style="font-size:0.8rem;color:var(--text-muted);" id="isochroneDetails">en voiture</div>
+                <button class="btn btn-sm btn-outline-secondary mt-2" onclick="document.getElementById('isochroneResult').style.display='none'">
+                    <i class="bi bi-x"></i> Fermer
+                </button>
+            </div>
+
+            <!-- Résultat de la mesure -->
+            <div id="measureResult" class="measure-result-badge">
+                <i class="bi bi-rulers"></i>
+                <span>Distance : <strong id="measureDistanceValue">0 km</strong></span>
+                <button class="btn-close-measure" onclick="arreterMesure()"><i class="bi bi-x-lg"></i></button>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ================= TABLEAU DE DONNÉES ================= -->
+
+    <div class="table-section" id="tableSection" style="display:none;">
+        <div class="table-header">
+            <h5>
+                <i class="bi bi-table"></i>
+                Tous les établissements de santé
+                <span class="badge bg-secondary ms-2" id="tableCount">0</span>
+            </h5>
+            <div class="table-actions">
+                <div id="datatableButtons"></div>
+                <button class="btn btn-outline-secondary" onclick="toggleTableView()">
+                    <i class="bi bi-x"></i> Fermer
+                </button>
+            </div>
+        </div>
+        <div class="table-wrapper">
+            <table id="dataTable" class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Nom</th>
+                        <th>Type</th>
+                        <th>Statut</th>
+                        <th>Commune</th>
+                        <th>Quartier</th>
+                        <th>Milieu</th>
+                        <th>Téléphone</th>
+                        <th>Observation</th>
+                        <th>Coordonnées</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <!-- Rempli par JavaScript -->
+                </tbody>
+            </table>
+        </div>
+        <div class="table-footer">
+            <span class="pagination-info">
+                Affichage de <strong id="tableStart">0</strong> à <strong id="tableEnd">0</strong>
+                sur <strong id="tableTotal">0</strong> établissements
+            </span>
+            <div>
+                <button class="btn btn-sm btn-outline-primary" id="tablePrev" onclick="tablePagePrev()">
+                    <i class="bi bi-chevron-left"></i> Précédent
+                </button>
+                <span class="mx-2" id="tablePageInfo">Page 1 / 1</span>
+                <button class="btn btn-sm btn-outline-primary" id="tableNext" onclick="tablePageNext()">
+                    Suivant <i class="bi bi-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- ================= PANNEAU LATÉRAL ================= -->
+<div class="panel-overlay" id="panelOverlay" onclick="toggleSidePanel()"></div>
+
+<div id="sidePanel">
+    <div class="panel-header">
+        <h5 class="fw-bold mb-0">
+            <i class="bi bi-info-circle text-primary"></i>
+            Détails
+        </h5>
+        <button class="panel-close" onclick="toggleSidePanel()">&times;</button>
+    </div>
+    <div id="panelContent">
+        <div class="text-center text-muted py-4">
+            <i class="bi bi-hand-index-thumb fs-1 d-block mb-3"></i>
+            <p>Sélectionnez un établissement<br>pour afficher les détails.</p>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+
+<!-- Leaflet MarkerCluster -->
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<!-- Leaflet Heat -->
+<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+
+<!-- DataTables -->
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.bootstrap5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+
+<script>
+    // ================================================================
+    // GESTION DU THÈME
+    // ================================================================
+
+    function initThemeSelector() {
+        const themeBtns = document.querySelectorAll('#themeSelectorFloating .theme-btn');
+        const savedTheme = localStorage.getItem('map-theme') || 'light';
+
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        themeBtns.forEach(btn => {
+            btn.classList.toggle('active-theme', btn.dataset.theme === savedTheme);
+        });
+
+        themeBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const theme = this.dataset.theme;
+                document.documentElement.setAttribute('data-theme', theme);
+                localStorage.setItem('map-theme', theme);
+
+                themeBtns.forEach(b => b.classList.remove('active-theme'));
+                this.classList.add('active-theme');
+
+                setTimeout(() => {
+                    if (map) map.invalidateSize();
+                }, 300);
+
+                showToast(`🎨 Thème "${theme === 'light' ? 'Clair' : 'Sombre'}" appliqué`);
+            });
+        });
+    }
+
+    // ================================================================
+    // LIMITE ADMINISTRATIVE DE THIÈS OUEST
+    // ================================================================
+
+    const THIES_OUEST_BOUNDARY = {"type":"FeatureCollection","features":[{"type":"Feature","properties":{"REG":"THIES","DEPT":"THIES","CAV":"THIES","CCRCA":"THIES OUEST","COD_REG":"07","COD_DEPT":"2","COD_CAV":"301","COD_CCRCA":"22","COD_ENTITE":"07230122","SUPERFICIE":13.3768469464,"SUP_HA":1337.68469464,"CCRCA_1":"THIES OUEST","Milieu":"Rural","Masculin":39103.0,"Feminin":42484.0,"TOTAL":81587.0,"ARRDT":null},"geometry":{"type":"Polygon","coordinates":[[[-16.925579213426804,14.790987445153045],[-16.925466916522307,14.790001175269854],[-16.925086689306138,14.790048571034845],[-16.923679138207138,14.78909242594202],[-16.922675814098703,14.788410859904879],[-16.922178692682994,14.789079800111361],[-16.9221362173656,14.789050870033341],[-16.921151278832507,14.788380020521542],[-16.921985993652022,14.78729087813019],[-16.921872915138117,14.787080301985126],[-16.92367050739754,14.786253675939374],[-16.92398246112709,14.78608382696219],[-16.924242230688908,14.786303016208905],[-16.92430354129869,14.786224009221813],[-16.92468667791241,14.785730284524924],[-16.924940917119752,14.785729038587304],[-16.92491523405483,14.785453928170869],[-16.924907420316437,14.785370229172873],[-16.924653952858737,14.783215677748611],[-16.924573895216216,14.782535149321095],[-16.92456816897741,14.782486473285713],[-16.924565321097106,14.78246226479608],[-16.924563477308972,14.782446591616738],[-16.924557659317163,14.782397135570799],[-16.92424249864177,14.779712309124019],[-16.924159018847597,14.779001134693148],[-16.92415578917188,14.77897362055061],[-16.924153655301016,14.778955441745232],[-16.92414226508665,14.778858406512976],[-16.925925832689288,14.77865576198117],[-16.927339863027395,14.778495093427743],[-16.927340296762367,14.778495044143385],[-16.927389679681067,14.778489432872927],[-16.92871977482757,14.778316956031235],[-16.93040635336276,14.778098241834778],[-16.932344381631857,14.775569761207496],[-16.932762228671557,14.77502460127668],[-16.93236543101987,14.774804746735944],[-16.932372025316052,14.774795890393797],[-16.931929806166682,14.774524127550755],[-16.931952732974878,14.774258308936034],[-16.931921576948504,14.77416510845707],[-16.931707746279827,14.77399473260154],[-16.93153056141688,14.773966701279251],[-16.93113462195514,14.773783091596254],[-16.930282041832463,14.77341145855256],[-16.930418491502536,14.772261726836561],[-16.930551640942493,14.772256179805805],[-16.93178212332018,14.772204914047505],[-16.932913980119274,14.772157751554438],[-16.93485035765918,14.77207705323295],[-16.935234197026162,14.771675347637059],[-16.935812651280248,14.771069964914492],[-16.936129082398228,14.770641921930315],[-16.9364572901676,14.77019794640996],[-16.937375577398797,14.769069315262708],[-16.93738881257896,14.769053048315401],[-16.938319053263285,14.767764642925227],[-16.9386746409196,14.767562944297872],[-16.938796066909717,14.767557378539122],[-16.938815604634396,14.767556482989567],[-16.93895826219906,14.767549943953268],[-16.939264354729673,14.767535913203753],[-16.941073030979336,14.767354985926461],[-16.941450813310038,14.767317193428882],[-16.942499025228134,14.767212329392283],[-16.943012236137193,14.765411651781639],[-16.94131048230411,14.764832661337767],[-16.941315093196256,14.764819201167368],[-16.94195291708294,14.76295724451872],[-16.94253786046745,14.761249634512234],[-16.94257270514179,14.761259443721835],[-16.943594238142353,14.761547015225254],[-16.944135894998233,14.761542457126778],[-16.945401896170143,14.761409431708108],[-16.94561686240544,14.761435379659165],[-16.945964182296752,14.761477303182566],[-16.946273042428057,14.760385507137087],[-16.945277364290593,14.757552338986438],[-16.945381531676507,14.757219774865503],[-16.95166092129648,14.757135042797424],[-16.95166505789046,14.757134986916618],[-16.951667440998634,14.75712906688598],[-16.952594627029526,14.754798042228979],[-16.955702892035042,14.757688201588826],[-16.957076894835865,14.75906376789098],[-16.958476548446342,14.760638625355005],[-16.95911650927811,14.76135788861983],[-16.96016212936538,14.762585410766903],[-16.96120426850627,14.763717064405416],[-16.961673520993028,14.7642582237484],[-16.9619407860324,14.764663537602344],[-16.96209587767952,14.7653234056643],[-16.961943432100583,14.768050421913753],[-16.96183182260361,14.77124128243684],[-16.96200095882996,14.776721986348022],[-16.96274703821537,14.776753969925489],[-16.96320515713864,14.776738995225708],[-16.96320515447364,14.776741169463275],[-16.96320514647874,14.776747692175839],[-16.963205135818715,14.776756389125875],[-16.971981735103373,14.777085183705482],[-16.971198556863005,14.77882556008327],[-16.97072380429508,14.779961461450027],[-16.97046898472434,14.780571142824977],[-16.969990429009876,14.781742351345214],[-16.96900907224418,14.783712851934235],[-16.969001023917194,14.783729012301638],[-16.968992975588833,14.783745172668652],[-16.968869375622674,14.784244804209958],[-16.9688338491604,14.784327640733038],[-16.968804078183346,14.784412597623334],[-16.968780195223,14.784499296844304],[-16.968762306543418,14.784587352487096],[-16.968750491770653,14.784676372701586],[-16.968744803495333,14.784765961272392],[-16.968745267041278,14.784855719535182],[-16.968751880341326,14.784945247958557],[-16.968764614006247,14.785034148139026],[-16.968783411341878,14.785122024434164],[-16.968808188715855,14.78520848571841],[-16.968977962501512,14.785954901238018],[-16.968386145414264,14.785965598918485],[-16.968062241203036,14.785971453164496],[-16.96779026540366,14.785976368505201],[-16.967207867560305,14.785996597551572],[-16.965606260329032,14.786052220312559],[-16.96476325133234,14.786081492995994],[-16.964634223045582,14.78608830123211],[-16.963994978817123,14.786122030179538],[-16.96383895640814,14.786137125120392],[-16.963573311013047,14.786162825680533],[-16.963249162831882,14.786199667507882],[-16.963152425429353,14.78621066233643],[-16.96287828357479,14.786246474764043],[-16.962732446241557,14.786265526038823],[-16.962313497358217,14.78632740060616],[-16.96189570238447,14.786396267788122],[-16.96147918458542,14.786472107271562],[-16.961232397700137,14.786521325552492],[-16.961064066849964,14.786554896686097],[-16.960959609043528,14.786581901819943],[-16.960659220352227,14.786659560030383],[-16.96025621919197,14.78677076213444],[-16.959855174909894,14.78688847222564],[-16.95945619850571,14.787012657730207],[-16.959275411780908,14.787072173101732],[-16.959059400407615,14.78714328428182],[-16.95880295436648,14.787232359875372],[-16.958664890441582,14.787280315731564],[-16.958272777801024,14.787423714157638],[-16.957883171016693,14.78757343987587],[-16.95801011543723,14.788481018178217],[-16.958253772823706,14.790222994366111],[-16.9584893557458,14.791907204511961],[-16.95855186362862,14.792354074250412],[-16.95833435972393,14.79240095460689],[-16.957641970089533,14.792550189420819],[-16.957534100425082,14.792570470084053],[-16.956828000597348,14.792703223175877],[-16.95569454220394,14.792916318753845],[-16.955020410025693,14.79304305603775],[-16.953805021489973,14.79327154463169],[-16.953311028962553,14.793364411493172],[-16.953011334563154,14.789575528265793],[-16.951516741970266,14.790182113707337],[-16.94813262535027,14.791568696581535],[-16.944480069162417,14.793095878922733],[-16.943840026955893,14.793337805869582],[-16.9433031010057,14.793540754610461],[-16.94328199684763,14.79355164856279],[-16.942853993888622,14.79377258278642],[-16.942236844419355,14.794049063202188],[-16.94147417976152,14.794359181187126],[-16.940449526148058,14.794769096819337],[-16.939602305634693,14.795108025417752],[-16.938317153475424,14.795627846253673],[-16.937063352845563,14.796152778338996],[-16.936142944086654,14.796486534840762],[-16.935921958750924,14.796545886979583],[-16.935699475788084,14.796599683199435],[-16.935475642742023,14.796647887821981],[-16.935250608052385,14.796690468876871],[-16.935024520956073,14.79672739812336],[-16.93479753138831,14.796758651068638],[-16.933845340955543,14.796868071472502],[-16.932954751122164,14.796888286629784],[-16.93295217520242,14.796892949052355],[-16.933007858297078,14.796939375578816],[-16.931993236419295,14.79700691032337],[-16.928092857767382,14.797434074976877],[-16.927899568284097,14.797458511975158],[-16.927420120881262,14.797519126331585],[-16.925926518267342,14.797707949211924],[-16.92592629378005,14.797707977591113],[-16.925925750707467,14.797706572259855],[-16.925924664578385,14.797703761595729],[-16.925912841094306,14.797673164960946],[-16.925909290627533,14.797648099508935],[-16.925904064843472,14.797611206768686],[-16.925901821917922,14.79754870105637],[-16.925906135663336,14.79748629823843],[-16.925920129965295,14.79735336777024],[-16.925920755911243,14.79726127488748],[-16.92591488067578,14.797169357558117],[-16.925902532002304,14.797078049697289],[-16.925314472342734,14.79225426584145],[-16.92531011114024,14.792218490182243],[-16.92530299322654,14.79216010072932],[-16.925185826621178,14.791257454410289],[-16.925180249320192,14.791224378848817],[-16.925180311362567,14.791190861158373],[-16.925186011072448,14.791157805356734],[-16.925197194718358,14.79112610300346],[-16.9252135606601,14.791096609153232],[-16.92523466748438,14.791070119294092],[-16.925259945910724,14.791047347892409],[-16.92528871414574,14.791028909122206],[-16.925320196271976,14.791015300300842],[-16.925384512541925,14.79100838364669],[-16.925579213426804,14.790987445153045]]]}}]};
+
+    // ================================================================
+    // CONFIGURATION
+    // ================================================================
+
+    const COLORS = {
+        'Clinique': '#1E88E5',
+        'Pharmacie': '#43A047',
+        'Poste de santé': '#FDD835',
+        'Centre de santé': '#FB8C00',
+        'Hôpital': '#E53935',
+        'Hopital': '#E53935',
+        'Laboratoire': '#8E24AA',
+        'Maternité': '#D81B60',
+        'Dispensaire': '#6D4C41',
+        'Cabinet médical': '#3949AB',
+        'Cabinet dentaire': '#00ACC1',
+        'default': '#78909C'
+    };
+
+    const STATUT_COLORS = {
+        'PUBLIC': '#28a745',
+        'PRIVE': '#0d6efd',
+        'COMM': '#ffc107',
+        'MIL': '#dc3545',
+        'AUTRE': '#6c757d'
+    };
+
+    const STATUT_DISPLAY = {
+        'PUBLIC': 'Public',
+        'PRIVE': 'Privé',
+        'COMM': 'Communautaire',
+        'MIL': 'Militaire',
+        'AUTRE': 'Autre'
+    };
+
+    const SPEEDS = {
+        'walking': 5,
+        'cycling': 15,
+        'driving': 40
+    };
+
+    // ================================================================
+    // VARIABLES
+    // ================================================================
+
+    let map = null;
+    let markersLayer = null;
+    let allFeatures = [];
+    let currentFilter = 'all';
+    let currentSearchQuery = '';
+    let bufferLayer = null;
+    let isochroneLayer = null;
+    let userLocationMarker = null;
+    let selectedFeature = null;
+    let isPanelOpen = false;
+    let routingControl = null;
+    let nearestMarker = null;
+    let heatLayer = null;
+    let heatmapActive = false;
+
+    // Outils
+    let isFullscreen = false;
+    let measureActive = false;
+    let measurePoints = [];
+    let measureLine = null;
+    let measureMarkers = [];
+    let measureTotalDistance = 0;
+
+    let distanceModeActive = false;
+    let distanceLine = null;
+    let distanceUserMarker = null;
+    let distanceTargetMarker = null;
+    let distanceTargetFeature = null;
+    let distanceLabelMarker = null;
+    let distancePrecisionCircle = null;
+
+    let frontiereLayer = null;
+
+    let tableData = [];
+    let tablePage = 1;
+    let tablePageSize = 15;
+    let tableFilteredData = [];
+    let tableVisible = false;
+
+    // ================================================================
+    // UTILITAIRES
+    // ================================================================
+
+    function djangoSlugify(value) {
+        return String(value)
+            .normalize('NFKD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase()
+            .replace(/[^a-z0-9\s-]/g, '')
+            .trim()
+            .replace(/[-\s]+/g, '-');
+    }
+
+    function calculerDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371;
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                  Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                  Math.sin(dLon/2) * Math.sin(dLon/2);
+        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    }
+
+    function showToast(message) {
+        const toast = document.createElement('div');
+        toast.className = 'custom-toast';
+        toast.innerHTML = `
+            <i class="bi bi-info-circle me-2"></i>
+            ${message}
+            <button onclick="this.parentElement.remove()">&times;</button>
+        `;
+        document.body.appendChild(toast);
+
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transition = 'opacity 0.3s ease';
+            setTimeout(() => toast.remove(), 300);
+        }, 4000);
+    }
+
+    // ================================================================
+    // INITIALISATION
+    // ================================================================
+
+    document.addEventListener("DOMContentLoaded", function() {
+        initThemeSelector();
+        initialiserCarte();
+        setupControls();
+        appliquerVuePartagee();
+    });
+
+    function initialiserCarte() {
+        try {
+            map = L.map("map", {
+                zoomControl: true,
+                preferCanvas: true
+            }).setView([14.7905, -16.9283], 13);
+
+            // --- Fonds de carte ---
+            const fondPlan = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                maxZoom: 19,
+                attribution: "&copy; OpenStreetMap contributors"
+            }).addTo(map);
+
+            const fondSatellite = L.tileLayer(
+                "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+                { maxZoom: 19, attribution: "&copy; Esri — World Imagery" }
+            );
+
+            const fondTopo = L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png", {
+                maxZoom: 17,
+                attribution: "&copy; OpenTopoMap (CC-BY-SA)"
+            });
+
+            // --- Limite administrative ---
+            frontiereLayer = L.geoJSON(THIES_OUEST_BOUNDARY, {
+                style: {
+                    color: '#8B5E00',
+                    weight: 3,
+                    dashArray: '8, 6',
+                    fillColor: '#F4A10C',
+                    fillOpacity: 0.06
+                },
+                onEachFeature: function (feature, layer) {
+                    const p = feature.properties || {};
+                    const total = (p.TOTAL || 0).toLocaleString('fr-FR');
+                    const masc = (p.Masculin || 0).toLocaleString('fr-FR');
+                    const fem = (p.Feminin || 0).toLocaleString('fr-FR');
+                    const sup = (p.SUP_HA || 0).toLocaleString('fr-FR');
+                    layer.bindPopup(`
+                        <div style="min-width:220px;">
+                            <div class="popup-title"><i class="bi bi-bounding-box"></i> ${p.CCRCA || 'Thiès Ouest'}</div>
+                            <div class="popup-row"><span class="popup-label">Milieu :</span> ${p.Milieu || '—'}</div>
+                            <div class="popup-row"><span class="popup-label">Population :</span> ${total} hab.</div>
+                            <div class="popup-row"><span class="popup-label">Hommes / Femmes :</span> ${masc} / ${fem}</div>
+                            <div class="popup-row"><span class="popup-label">Superficie :</span> ${sup} ha</div>
+                        </div>
+                    `);
+                }
+            });
+            frontiereLayer.addTo(map);
+
+            L.control.layers(
+                { "🗺️ Plan": fondPlan, "🛰️ Satellite": fondSatellite, "⛰️ Topographique": fondTopo },
+                { "🟤 Limite Thiès Ouest": frontiereLayer },
+                { position: 'topright', collapsed: true }
+            ).addTo(map);
+
+            L.control.scale({ imperial: false, position: 'bottomleft' }).addTo(map);
+
+            // --- Regroupement intelligent ---
+            markersLayer = L.markerClusterGroup({
+                maxClusterRadius: 45,
+                spiderfyOnMaxZoom: true,
+                showCoverageOnHover: false,
+                disableClusteringAtZoom: 17,
+                iconCreateFunction: function(cluster) {
+                    const count = cluster.getChildCount();
+                    const size = count < 10 ? 34 : count < 30 ? 42 : 52;
+                    return L.divIcon({
+                        html: `<div style="width:${size}px;height:${size}px;font-size:${count < 10 ? 12 : 14}px;">${count}</div>`,
+                        className: 'marker-cluster marker-cluster-health',
+                        iconSize: L.point(size, size)
+                    });
+                }
+            }).addTo(map);
+
+            map.on('moveend', updateVisibleCount);
+            map.on('zoomend', updateVisibleCount);
+            map.on('click', function(e) {
+                if (distanceModeActive) {
+                    traiterClicMesure(e);
+                } else if (selectedFeature) {
+                    deselectFeature();
+                }
+            });
+
+            setupCoordinatesControl();
+            chargerEtablissements();
+            setupLocationControl();
+
+        } catch (error) {
+            console.error("Erreur initialisation :", error);
+            document.getElementById('mapStatus').innerHTML = '<i class="bi bi-exclamation-triangle text-danger"></i> Erreur';
+        }
+    }
+
+    // ================================================================
+    // COORDONNÉES
+    // ================================================================
+
+    function setupCoordinatesControl() {
+        const CoordsControl = L.Control.extend({
+            options: { position: 'bottomright' },
+            onAdd: function() {
+                const div = L.DomUtil.create('div', 'coords-control');
+                div.id = 'coordsControl';
+                div.innerHTML = '<i class="bi bi-crosshair"></i> --.------, --.------';
+                return div;
+            }
+        });
+        map.addControl(new CoordsControl());
+
+        map.on('mousemove', function(e) {
+            const el = document.getElementById('coordsControl');
+            if (el) {
+                el.innerHTML = '<i class="bi bi-crosshair"></i> ' +
+                    e.latlng.lat.toFixed(6) + ', ' + e.latlng.lng.toFixed(6);
+            }
+        });
+    }
+
+    // ================================================================
+    // LOCALISATION
+    // ================================================================
+
+    function setupLocationControl() {
+        const locateBtn = L.control({ position: 'topleft' });
+
+        locateBtn.onAdd = function() {
+            const div = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
+            div.innerHTML = `
+                <button id="locateBtn" title="Me localiser précisément" style="width:34px;height:34px;border:none;background:var(--bg-card);cursor:pointer;border-radius:4px;box-shadow:0 2px 6px rgba(0,0,0,0.3);color:var(--text-primary);">
+                    <i id="locateBtnIcon" class="bi bi-geo-alt" style="font-size:18px;color:#0d6efd;"></i>
+                </button>
+            `;
+            return div;
+        };
+
+        locateBtn.addTo(map);
+
+        document.getElementById('locateBtn').addEventListener('click', function() {
+            if (!navigator.geolocation) {
+                showToast('❌ Géolocalisation non supportée par ce navigateur');
+                return;
+            }
+
+            const icon = document.getElementById('locateBtnIcon');
+            icon.className = 'bi bi-arrow-repeat';
+            icon.style.animation = 'spin 1s linear infinite';
+            showToast('📡 Recherche de votre position précise…');
+
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    const precision = Math.round(position.coords.accuracy || 0);
+
+                    map.setView([lat, lon], 16);
+
+                    if (userLocationMarker) {
+                        map.removeLayer(userLocationMarker);
+                    }
+
+                    userLocationMarker = L.marker([lat, lon], {
+                        icon: L.divIcon({
+                            className: 'current-location-marker',
+                            html: '<i class="bi bi-geo-alt-fill" style="color:#0d6efd;font-size:32px;text-shadow:0 2px 8px rgba(0,0,0,0.3);"></i>',
+                            iconSize: [32, 32],
+                            iconAnchor: [16, 32]
+                        })
+                    }).addTo(map).bindPopup(`📍 Votre position<br><small>Précision : ~${precision} m</small>`).openPopup();
+
+                    icon.className = 'bi bi-geo-alt';
+                    icon.style.animation = '';
+                    showToast(`✅ Position localisée (précision ~${precision} m)`);
+                },
+                function(error) {
+                    icon.className = 'bi bi-geo-alt';
+                    icon.style.animation = '';
+
+                    let message = 'Impossible de vous localiser';
+                    if (error.code === error.PERMISSION_DENIED) {
+                        message = '❌ Localisation refusée — autorisez l\'accès à votre position dans les paramètres du navigateur';
+                    } else if (error.code === error.POSITION_UNAVAILABLE) {
+                        message = '⚠️ Position indisponible — vérifiez votre GPS/connexion';
+                    } else if (error.code === error.TIMEOUT) {
+                        message = '⏱️ Délai dépassé — réessayez';
+                    }
+                    showToast(message);
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 12000,
+                    maximumAge: 0
+                }
+            );
+        });
+    }
+
+    // ================================================================
+    // CHARGEMENT DES ÉTABLISSEMENTS
+    // ================================================================
+
+    function chargerEtablissements() {
+        document.getElementById('mapStatus').innerHTML = '<i class="bi bi-hourglass-split"></i> Chargement...';
+
+        fetch("/api/etablissements/", {
+            method: "GET",
+            headers: { "Accept": "application/json" },
+            cache: "no-cache"
+        })
+        .then(function(response) {
+            if (!response.ok) throw new Error("Erreur HTTP " + response.status);
+            return response.json();
+        })
+        .then(function(data) {
+            if (!data || data.type !== "FeatureCollection") {
+                throw new Error("GeoJSON invalide");
+            }
+
+            allFeatures = data.features || [];
+
+            allFeatures.forEach(function(f) {
+                if (f.properties) {
+                    if (f.properties.type === "Poste de santÃ©") {
+                        f.properties.type = "Poste de santé";
+                    } else if (f.properties.type === "Centre de santÃ©") {
+                        f.properties.type = "Centre de santé";
+                    } else if (f.properties.type === "Hopital") {
+                        f.properties.type = "Hôpital";
+                    }
+                }
+            });
+
+            markersLayer.clearLayers();
+            afficherEtablissements(allFeatures);
+            updateCounts();
+            updateTypeCounts();
+            updateVisibleCount();
+            remplirTableau(allFeatures);
+
+            if (allFeatures.length === 0) {
+                document.getElementById('mapStatus').innerHTML = '<i class="bi bi-info-circle text-warning"></i> Aucune donnée';
+            } else {
+                const bounds = markersLayer.getBounds();
+                if (frontiereLayer && frontiereLayer.getBounds) {
+                    const frontiereBounds = frontiereLayer.getBounds();
+                    if (frontiereBounds.isValid()) {
+                        bounds.extend(frontiereBounds);
+                    }
+                }
+                if (!bounds.isEmpty()) {
+                    map.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
+                }
+                document.getElementById('mapStatus').innerHTML = '<i class="bi bi-check-circle text-success"></i> ' + allFeatures.length + ' établissements';
+            }
+
+            appliquerParametresURL();
+        })
+        .catch(function(error) {
+            console.error("❌ Erreur :", error);
+            document.getElementById('mapStatus').innerHTML = '<i class="bi bi-exclamation-triangle text-danger"></i> Erreur de chargement';
+        });
+    }
+
+    // ================================================================
+    // AFFICHAGE DES ÉTABLISSEMENTS
+    // ================================================================
+
+    function afficherEtablissements(features) {
+        features.forEach(function(feature) {
+            try {
+                const coords = feature.geometry.coordinates;
+                const props = feature.properties || {};
+
+                const longitude = parseFloat(coords[0]);
+                const latitude = parseFloat(coords[1]);
+
+                if (isNaN(latitude) || isNaN(longitude)) return;
+
+                const nom = props.nom || "Sans nom";
+                const type = props.type || "default";
+                const color = COLORS[type] || COLORS["default"];
+
+                const marker = L.circleMarker([latitude, longitude], {
+                    radius: 8,
+                    fillColor: color,
+                    color: '#ffffff',
+                    weight: 2.5,
+                    fillOpacity: 0.88,
+                    className: 'etablissement-marker'
+                });
+
+                marker.feature = feature;
+                marker.bindPopup(creerPopup(feature));
+
+                marker.on('click', function(e) {
+                    selectFeature(feature, marker);
+                    L.DomEvent.stopPropagation(e);
+                });
+
+                marker.on('mouseover', function() {
+                    this.setStyle({ weight: 4, color: '#212529', fillOpacity: 1 });
+                });
+
+                marker.on('mouseout', function() {
+                    if (this !== selectedFeature?.layer) {
+                        this.setStyle({ weight: 2.5, color: '#ffffff', fillOpacity: 0.88 });
+                    }
+                });
+
+                markersLayer.addLayer(marker);
+
+            } catch (error) {
+                console.warn("Erreur ajout :", error);
+            }
+        });
+    }
+
+    // ================================================================
+    // POPUP
+    // ================================================================
+
+    function creerPopup(feature) {
+        const props = feature.properties || {};
+        const coords = feature.geometry.coordinates;
+        const nom = props.nom || 'Sans nom';
+        const type = props.type || 'Inconnu';
+        const commune = props.commune || 'Thiès Ouest';
+        const quartier = props.quartier || 'Non renseigné';
+        const milieu = props.milieu || '';
+        const statut = props.statut || 'AUTRE';
+        const observation = props.observation || '';
+        const telephone = props.telephone || '';
+        const email = props.email || '';
+        const id = props.id || 0;
+
+        const statutDisplay = STATUT_DISPLAY[statut] || statut;
+        const statutColor = STATUT_COLORS[statut] || '#6c757d';
+        const typeColor = COLORS[type] || COLORS['default'];
+
+        return `
+            <div style="min-width:250px;">
+                <div class="popup-title" style="color:${typeColor};">
+                    <i class="bi bi-hospital"></i> ${nom}
+                </div>
+                <div class="popup-row">
+                    <span class="popup-label">Type :</span>
+                    <span class="badge" style="background:${typeColor};color:white;padding:2px 10px;border-radius:12px;">${type}</span>
+                </div>
+                <div class="popup-row"><span class="popup-label">Commune :</span> ${commune}</div>
+                ${quartier !== 'Non renseigné' ? `<div class="popup-row"><span class="popup-label">Quartier :</span> ${quartier}</div>` : ''}
+                ${milieu ? `<div class="popup-row"><span class="popup-label">Milieu :</span> ${milieu}</div>` : ''}
+                <div class="popup-row">
+                    <span class="popup-label">Statut :</span>
+                    <span class="badge" style="background:${statutColor};color:white;padding:2px 10px;border-radius:12px;">${statutDisplay}</span>
+                </div>
+                ${telephone ? `<div class="popup-row"><span class="popup-label">Tél :</span> <a href="tel:${telephone}">${telephone}</a></div>` : ''}
+                ${email ? `<div class="popup-row"><span class="popup-label">Email :</span> <a href="mailto:${email}">${email}</a></div>` : ''}
+                ${observation ? `<div class="popup-row"><span class="popup-label">Obs :</span> <small>${observation}</small></div>` : ''}
+                <hr>
+                <div class="d-flex gap-2 flex-wrap">
+                    <button class="btn btn-sm btn-outline-primary" onclick="zoomToFeature(${id})">
+                        <i class="bi bi-zoom-in"></i> Zoom
+                    </button>
+                    <button class="btn btn-sm btn-outline-success" onclick="tracerItineraire(${coords[1]}, ${coords[0]}, '${nom.replace(/'/g, "\\'")}')">
+                        <i class="bi bi-route"></i> Itinéraire
+                    </button>
+                    <button class="btn btn-sm btn-outline-warning" onclick="trouverPlusProcheDepuis(${coords[1]}, ${coords[0]})">
+                        <i class="bi bi-search"></i> Proche
+                    </button>
+                    <button class="btn btn-sm btn-info" onclick="mesurerDistanceDepuisCoordonnees(${coords[1]}, ${coords[0]})">
+                        <i class="bi bi-rulers"></i> Distance
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+
+    // ================================================================
+    // SÉLECTION
+    // ================================================================
+
+    function selectFeature(feature, layer) {
+        if (selectedFeature) {
+            deselectFeature();
+        }
+
+        selectedFeature = { feature, layer };
+        layer.setStyle({ weight: 4, color: '#212529', fillOpacity: 1 });
+        layer.openPopup();
+        updatePanel(feature);
+
+        highlightTableRow(feature.properties?.id);
+
+        if (window.innerWidth < 768) {
+            toggleSidePanel(true);
+        }
+    }
+
+    function deselectFeature() {
+        if (selectedFeature) {
+            const layer = selectedFeature.layer;
+            layer.setStyle({ weight: 2.5, color: '#ffffff', fillOpacity: 0.88 });
+            selectedFeature = null;
+        }
+        document.querySelectorAll('#tableBody tr').forEach(row => {
+            row.classList.remove('highlight-row');
+        });
+    }
+
+    // ================================================================
+    // PANNEAU LATÉRAL
+    // ================================================================
+
+    function toggleSidePanel(forceOpen) {
+        const panel = document.getElementById('sidePanel');
+        const overlay = document.getElementById('panelOverlay');
+
+        if (forceOpen !== undefined) {
+            isPanelOpen = forceOpen;
+        } else {
+            isPanelOpen = !isPanelOpen;
+        }
+
+        panel.classList.toggle('open', isPanelOpen);
+        overlay.classList.toggle('show', isPanelOpen);
+    }
+
+    function updatePanel(feature) {
+        const props = feature.properties || {};
+        const container = document.getElementById('panelContent');
+        const coords = feature.geometry.coordinates;
+
+        const nom = props.nom || 'Sans nom';
+        const type = props.type || 'Inconnu';
+        const commune = props.commune || 'Thiès Ouest';
+        const quartier = props.quartier || 'Non renseigné';
+        const milieu = props.milieu || '';
+        const statut = props.statut || 'AUTRE';
+        const observation = props.observation || '';
+        const telephone = props.telephone || '';
+        const email = props.email || '';
+        const id = props.id || 0;
+
+        const statutDisplay = STATUT_DISPLAY[statut] || statut;
+        const statutColor = STATUT_COLORS[statut] || '#6c757d';
+        const typeColor = COLORS[type] || COLORS['default'];
+
+        container.innerHTML = `
+            <div class="card border-0">
+                <div class="card-header bg-transparent p-0 pb-2 border-bottom">
+                    <h5 class="fw-bold" style="color:${typeColor};">${nom}</h5>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <span class="badge" style="background:${typeColor};color:white;padding:3px 12px;border-radius:12px;">${type}</span>
+                        <span class="badge" style="background:${statutColor};color:white;padding:3px 12px;border-radius:12px;">${statutDisplay}</span>
+                    </div>
+                </div>
+                <div class="card-body p-0 pt-3">
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <small class="text-muted d-block">Commune</small>
+                            <strong>${commune}</strong>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted d-block">Quartier</small>
+                            <strong>${quartier}</strong>
+                        </div>
+                        ${milieu ? `<div class="col-6"><small class="text-muted d-block">Milieu</small><strong>${milieu}</strong></div>` : ''}
+                        ${telephone ? `<div class="col-12"><small class="text-muted d-block">Téléphone</small><strong><a href="tel:${telephone}">${telephone}</a></strong></div>` : ''}
+                        ${email ? `<div class="col-12"><small class="text-muted d-block">Email</small><strong><a href="mailto:${email}">${email}</a></strong></div>` : ''}
+                        ${observation ? `<div class="col-12"><small class="text-muted d-block">Observation</small><p class="mb-0 small bg-light p-2 rounded">${observation}</p></div>` : ''}
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent p-0 pt-3 border-top">
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button class="btn btn-sm btn-outline-primary" onclick="zoomToFeature(${id})">
+                            <i class="bi bi-zoom-in"></i> Zoom
+                        </button>
+                        <button class="btn btn-sm btn-outline-success" onclick="tracerItineraire(${coords[1]}, ${coords[0]}, '${nom.replace(/'/g, "\\'")}')">
+                            <i class="bi bi-route"></i> Itinéraire
+                        </button>
+                        <button class="btn btn-sm btn-outline-warning" onclick="trouverPlusProcheDepuis(${coords[1]}, ${coords[0]})">
+                            <i class="bi bi-search"></i> Proche
+                        </button>
+                        <button class="btn btn-sm btn-info" onclick="mesurerDistanceDepuisCoordonnees(${coords[1]}, ${coords[0]})">
+                            <i class="bi bi-rulers"></i> Distance
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    // ================================================================
+    // TABLEAU DE DONNÉES
+    // ================================================================
+
+    function remplirTableau(features) {
+        tableData = features.map(f => {
+            const props = f.properties || {};
+            const coords = f.geometry.coordinates;
+            return {
+                id: props.id || 0,
+                nom: props.nom || 'Sans nom',
+                type: props.type || 'Inconnu',
+                statut: props.statut || 'AUTRE',
+                statutDisplay: STATUT_DISPLAY[props.statut] || props.statut || 'Autre',
+                commune: props.commune || 'Thiès Ouest',
+                quartier: props.quartier || 'Non renseigné',
+                milieu: props.milieu || '',
+                telephone: props.telephone || '',
+                observation: props.observation || '',
+                lat: coords[1],
+                lon: coords[0],
+                typeColor: COLORS[props.type] || COLORS['default'],
+                statutColor: STATUT_COLORS[props.statut] || '#6c757d'
+            };
+        });
+
+        tableFilteredData = [...tableData];
+        tablePage = 1;
+        renderTablePage();
+        document.getElementById('tableCount').textContent = tableData.length;
+    }
+
+    function renderTablePage() {
+        const tbody = document.getElementById('tableBody');
+        const start = (tablePage - 1) * tablePageSize;
+        const end = Math.min(start + tablePageSize, tableFilteredData.length);
+        const pageData = tableFilteredData.slice(start, end);
+
+        if (pageData.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="11" class="text-center text-muted py-4">Aucun établissement trouvé</td></tr>`;
+        } else {
+            tbody.innerHTML = pageData.map((item, index) => `
+                <tr data-id="${item.id}" onclick="zoomToFeature(${item.id})">
+                    <td>${start + index + 1}</td>
+                    <td><strong>${item.nom}</strong></td>
+                    <td>
+                        <span class="badge-type" style="background:${item.typeColor};">${item.type}</span>
+                    </td>
+                    <td>
+                        <span class="badge-statut" style="background:${item.statutColor};">${item.statutDisplay}</span>
+                    </td>
+                    <td>${item.commune}</td>
+                    <td>${item.quartier}</td>
+                    <td>${item.milieu || '—'}</td>
+                    <td>${item.telephone || '—'}</td>
+                    <td>${item.observation ? item.observation.substring(0, 30) + (item.observation.length > 30 ? '...' : '') : '—'}</td>
+                    <td><small>${item.lat.toFixed(4)}, ${item.lon.toFixed(4)}</small></td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary" onclick="event.stopPropagation();zoomToFeature(${item.id})">
+                            <i class="bi bi-zoom-in"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-success" onclick="event.stopPropagation();tracerItineraire(${item.lat}, ${item.lon}, '${item.nom.replace(/'/g, "\\'")}')">
+                            <i class="bi bi-route"></i>
+                        </button>
+                        <button class="btn btn-sm btn-info" onclick="event.stopPropagation();mesurerDistanceDepuisCoordonnees(${item.lat}, ${item.lon})">
+                            <i class="bi bi-rulers"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        document.getElementById('tableStart').textContent = tableFilteredData.length > 0 ? start + 1 : 0;
+        document.getElementById('tableEnd').textContent = end;
+        document.getElementById('tableTotal').textContent = tableFilteredData.length;
+        document.getElementById('tablePageInfo').textContent = `Page ${tablePage} / ${Math.max(1, Math.ceil(tableFilteredData.length / tablePageSize))}`;
+
+        document.getElementById('tablePrev').disabled = tablePage <= 1;
+        document.getElementById('tableNext').disabled = end >= tableFilteredData.length;
+    }
+
+    function tablePagePrev() {
+        if (tablePage > 1) {
+            tablePage--;
+            renderTablePage();
+        }
+    }
+
+    function tablePageNext() {
+        if (tablePage * tablePageSize < tableFilteredData.length) {
+            tablePage++;
+            renderTablePage();
+        }
+    }
+
+    function highlightTableRow(id) {
+        document.querySelectorAll('#tableBody tr').forEach(row => {
+            row.classList.remove('highlight-row');
+            if (row.dataset.id == id) {
+                row.classList.add('highlight-row');
+            }
+        });
+    }
+
+    function toggleTableView() {
+        tableVisible = !tableVisible;
+        const section = document.getElementById('tableSection');
+        const label = document.getElementById('tableToggleLabel');
+
+        if (tableVisible) {
+            section.style.display = 'block';
+            label.textContent = 'Cacher tableau';
+            renderTablePage();
+        } else {
+            section.style.display = 'none';
+            label.textContent = 'Voir tableau';
+        }
+    }
+
+    // ================================================================
+    // FILTRES
+    // ================================================================
+
+    function setupControls() {
+        document.querySelectorAll('#typeFilters .btn').forEach(button => {
+            button.addEventListener('click', function() {
+                document.querySelectorAll('#typeFilters .btn').forEach(b => {
+                    b.classList.remove('active-filter');
+                });
+                this.classList.add('active-filter');
+                currentFilter = this.dataset.type;
+                applyFilters();
+                filterTable();
+            });
+        });
+
+        document.querySelectorAll('.legend-item[data-type]').forEach(item => {
+            item.addEventListener('click', function() {
+                const type = this.dataset.type;
+                const btn = document.querySelector(`#typeFilters .btn[data-type="${type}"]`);
+                if (btn) btn.click();
+            });
+        });
+
+        const input = document.getElementById('searchInput');
+        const clearBtn = document.getElementById('searchClear');
+
+        input.addEventListener('input', function() {
+            currentSearchQuery = this.value.trim();
+            clearBtn.style.display = currentSearchQuery ? 'block' : 'none';
+            applyFilters();
+            filterTable();
+        });
+
+        clearBtn.addEventListener('click', function() {
+            input.value = '';
+            currentSearchQuery = '';
+            this.style.display = 'none';
+            applyFilters();
+            filterTable();
+        });
+    }
+
+    function applyFilters() {
+        const layers = markersLayer.getLayers();
+        let visibleCount = 0;
+
+        layers.forEach(layer => {
+            if (layer.feature) {
+                const props = layer.feature.properties || {};
+                const type = props.type || '';
+                const nom = props.nom || '';
+
+                const matchType = currentFilter === 'all' || type === currentFilter;
+                const matchSearch = currentSearchQuery === '' ||
+                    nom.toLowerCase().includes(currentSearchQuery.toLowerCase());
+
+                const shouldShow = matchType && matchSearch;
+
+                if (shouldShow) {
+                    if (!markersLayer.hasLayer(layer)) {
+                        markersLayer.addLayer(layer);
+                    }
+                    visibleCount++;
+                } else {
+                    if (markersLayer.hasLayer(layer)) {
+                        markersLayer.removeLayer(layer);
+                    }
+                }
+            }
+        });
+
+        document.getElementById('visibleCount').textContent = visibleCount;
+
+        if (visibleCount === 0) {
+            document.getElementById('mapStatus').innerHTML = '<i class="bi bi-info-circle text-warning"></i> Aucun établissement visible';
+        } else {
+            document.getElementById('mapStatus').innerHTML = '<i class="bi bi-check-circle text-success"></i> ' + visibleCount + ' établissements affichés';
+        }
+    }
+
+    function filterTable() {
+        tableFilteredData = tableData.filter(item => {
+            const matchType = currentFilter === 'all' || item.type === currentFilter;
+            const matchSearch = currentSearchQuery === '' ||
+                item.nom.toLowerCase().includes(currentSearchQuery.toLowerCase()) ||
+                item.commune.toLowerCase().includes(currentSearchQuery.toLowerCase()) ||
+                item.quartier.toLowerCase().includes(currentSearchQuery.toLowerCase());
+            return matchType && matchSearch;
+        });
+        tablePage = 1;
+        renderTablePage();
+    }
+
+    // ================================================================
+    // COMPTEURS
+    // ================================================================
+
+    function updateCounts() {
+        document.getElementById('etablissementsCount').textContent = allFeatures.length;
+        document.getElementById('headerCount').textContent = allFeatures.length;
+    }
+
+    function updateTypeCounts() {
+        const counts = {};
+        allFeatures.forEach(f => {
+            const type = f.properties?.type || 'default';
+            counts[type] = (counts[type] || 0) + 1;
+        });
+
+        document.getElementById('countAll').textContent = allFeatures.length;
+
+        document.querySelectorAll('#typeFilters .btn[data-type]').forEach(btn => {
+            const type = btn.dataset.type;
+            if (type === 'all') return;
+
+            const id = 'count_' + djangoSlugify(type);
+            const el = document.getElementById(id);
+            if (el) el.textContent = counts[type] || 0;
+        });
+    }
+
+    function updateVisibleCount() {
+        const bounds = map.getBounds();
+        let visibleCount = 0;
+
+        markersLayer.eachLayer(layer => {
+            if (layer.getLatLng && bounds.contains(layer.getLatLng())) {
+                visibleCount++;
+            }
+        });
+
+        document.getElementById('visibleCount').textContent = visibleCount;
+    }
+
+    // ================================================================
+    // ZONES DE DESSERTE (BUFFERS)
+    // ================================================================
+
+    function createBuffer() {
+        const radius = parseFloat(document.getElementById('bufferDistance').value) || 2;
+        const center = map.getCenter();
+
+        clearBuffer();
+
+        bufferLayer = L.circle(center, {
+            radius: radius * 1000,
+            color: '#0d6efd',
+            fillColor: '#0d6efd',
+            fillOpacity: 0.15,
+            weight: 2,
+            dashArray: '5, 5'
+        }).addTo(map);
+
+        let count = 0;
+        const inZone = [];
+
+        markersLayer.eachLayer(layer => {
+            if (layer.feature) {
+                const latlng = layer.getLatLng();
+                if (latlng && bufferLayer.getBounds().contains(latlng)) {
+                    count++;
+                    inZone.push(layer.feature.properties?.nom || 'Établissement');
+                }
+            }
+        });
+
+        const popup = L.popup()
+            .setLatLng(center)
+            .setContent(`
+                <div style="text-align:center;min-width:200px;">
+                    <h6 class="fw-bold">Zone de desserte</h6>
+                    <hr>
+                    <p>Rayon : <strong>${radius} km</strong></p>
+                    <p>Établissements : <strong>${count}</strong></p>
+                    ${count > 0 ? `<small>${inZone.slice(0, 5).join(', ')}${count > 5 ? ` et ${count-5} autres...` : ''}</small>` : ''}
+                    <br>
+                    <button class="btn btn-sm btn-primary mt-2" onclick="exporterZone()">
+                        <i class="bi bi-download"></i> Exporter
+                    </button>
+                </div>
+            `)
+            .openOn(map);
+
+        showToast(`${count} établissements dans un rayon de ${radius} km`);
+    }
+
+    function clearBuffer() {
+        if (bufferLayer) {
+            map.removeLayer(bufferLayer);
+            bufferLayer = null;
+        }
+        if (isochroneLayer) {
+            map.removeLayer(isochroneLayer);
+            isochroneLayer = null;
+        }
+        document.getElementById('isochroneResult').style.display = 'none';
+    }
+
+    function exporterZone() {
+        if (!bufferLayer) {
+            showToast('Créez d\'abord une zone de desserte');
+            return;
+        }
+
+        const features = [];
+        markersLayer.eachLayer(layer => {
+            if (layer.feature) {
+                const latlng = layer.getLatLng();
+                if (latlng && bufferLayer.getBounds().contains(latlng)) {
+                    features.push(layer.feature);
+                }
+            }
+        });
+
+        if (features.length === 0) {
+            showToast('Aucun établissement dans cette zone');
+            return;
+        }
+
+        const geojson = {
+            type: "FeatureCollection",
+            features: features
+        };
+
+        const blob = new Blob([JSON.stringify(geojson, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'zone_desserte.geojson';
+        a.click();
+        URL.revokeObjectURL(url);
+
+        showToast(`✅ ${features.length} établissements exportés en GeoJSON`);
+    }
+
+    // ================================================================
+    // ISOCHRONES
+    // ================================================================
+
+    function calculerIsochrone() {
+        const time = parseInt(document.getElementById('isochroneTime').value) || 10;
+        const mode = document.getElementById('transportMode').value;
+        const center = map.getCenter();
+
+        const speed = SPEEDS[mode] || 5;
+        const radius = (speed * time) / 60;
+
+        clearBuffer();
+
+        const colors = {
+            'walking': '#28a745',
+            'cycling': '#17a2b8',
+            'driving': '#dc3545'
+        };
+        const color = colors[mode] || '#28a745';
+
+        isochroneLayer = L.circle(center, {
+            radius: radius * 1000,
+            color: color,
+            fillColor: color,
+            fillOpacity: 0.12,
+            weight: 2,
+            dashArray: '3, 5'
+        }).addTo(map);
+
+        let count = 0;
+        markersLayer.eachLayer(layer => {
+            if (layer.feature) {
+                const latlng = layer.getLatLng();
+                if (latlng && isochroneLayer.getBounds().contains(latlng)) {
+                    count++;
+                }
+            }
+        });
+
+        const modeNames = {
+            'walking': 'à pied',
+            'cycling': 'à vélo',
+            'driving': 'en voiture'
+        };
+
+        document.getElementById('isochroneTimeDisplay').textContent = time;
+        document.getElementById('isochroneDetails').textContent =
+            `${count} établissements accessibles ${modeNames[mode] || ''} en ${time} min`;
+
+        document.getElementById('isochroneResult').style.display = 'block';
+
+        showToast(`Isochrone : ${time} min ${modeNames[mode] || ''} - ${count} établissements`);
+    }
+
+    // ================================================================
+    // ÉTABLISSEMENT LE PLUS PROCHE
+    // ================================================================
+
+    function trouverPlusProche() {
+        if (!navigator.geolocation) {
+            showToast('Activez la géolocalisation');
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+                trouverPlusProcheDepuis(lat, lon);
+            },
+            function() {
+                showToast('Impossible de vous localiser. Cliquez sur la carte pour définir un point.');
+                map.once('click', function(e) {
+                    trouverPlusProcheDepuis(e.latlng.lat, e.latlng.lng);
+                });
+            },
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        );
+    }
+
+    function trouverPlusProcheDepuis(lat, lon) {
+        if (nearestMarker) {
+            map.removeLayer(nearestMarker);
+            nearestMarker = null;
+        }
+
+        if (routingControl) {
+            map.removeControl(routingControl);
+            routingControl = null;
+        }
+
+        nearestMarker = L.marker([lat, lon], {
+            icon: L.divIcon({
+                className: 'current-location-marker',
+                html: '<i class="bi bi-geo-alt-fill" style="color:#ffc107;font-size:28px;text-shadow:0 2px 8px rgba(0,0,0,0.3);"></i>',
+                iconSize: [28, 28],
+                iconAnchor: [14, 28]
+            })
+        }).addTo(map).bindPopup('📍 Point de départ').openPopup();
+
+        let nearest = null;
+        let minDistance = Infinity;
+
+        markersLayer.eachLayer(layer => {
+            if (layer.feature) {
+                const coords = layer.feature.geometry.coordinates;
+                const dist = calculerDistance(lat, lon, coords[1], coords[0]);
+                if (dist < minDistance) {
+                    minDistance = dist;
+                    nearest = { layer, feature: layer.feature, distance: dist };
+                }
+            }
+        });
+
+        if (!nearest) {
+            showToast('Aucun établissement trouvé');
+            return;
+        }
+
+        const nearestLayer = nearest.layer;
+        nearestLayer.setStyle({
+            weight: 6,
+            color: '#ffc107',
+            fillOpacity: 1
+        });
+
+        const props = nearest.feature.properties || {};
+        const coords = nearest.feature.geometry.coordinates;
+
+        L.popup()
+            .setLatLng([coords[1], coords[0]])
+            .setContent(`
+                <div style="text-align:center;min-width:220px;">
+                    <h6 class="fw-bold text-warning">
+                        <i class="bi bi-star-fill"></i> Plus proche
+                    </h6>
+                    <hr>
+                    <p><strong>${props.nom || 'Sans nom'}</strong></p>
+                    <p>Type : ${props.type || 'Inconnu'}</p>
+                    <p>Distance : <strong>${minDistance.toFixed(2)} km</strong></p>
+                    <div class="d-flex gap-2 justify-content-center mt-2">
+                        <button class="btn btn-sm btn-primary" onclick="zoomToFeature(${props.id || 0})">
+                            <i class="bi bi-zoom-in"></i> Zoom
+                        </button>
+                        <button class="btn btn-sm btn-success" onclick="tracerItineraire(${coords[1]}, ${coords[0]}, '${props.nom?.replace(/'/g, "\\'") || ''}')">
+                            <i class="bi bi-route"></i> Itinéraire
+                        </button>
+                    </div>
+                </div>
+            `)
+            .openOn(map);
+
+        const bounds = L.latLngBounds([
+            [lat, lon],
+            [coords[1], coords[0]]
+        ]);
+        map.fitBounds(bounds, { padding: [50, 50] });
+
+        showToast(`📍 Établissement le plus proche : ${props.nom || 'Sans nom'} (${minDistance.toFixed(2)} km)`);
+    }
+
+    // ================================================================
+    // ITINÉRAIRE
+    // ================================================================
+
+    function tracerItineraire(destLat, destLon, destName) {
+        if (!navigator.geolocation) {
+            showToast('Activez la géolocalisation');
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                const startLat = position.coords.latitude;
+                const startLon = position.coords.longitude;
+
+                if (routingControl) {
+                    map.removeControl(routingControl);
+                    routingControl = null;
+                }
+
+                const url = `https://routing.openstreetmap.de/routed-car/route/v1/driving/${startLon},${startLat};${destLon},${destLat}?steps=true&geometries=geojson`;
+
+                fetch(url)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.code !== 'Ok') {
+                            throw new Error('Erreur de calcul');
+                        }
+
+                        const route = data.routes[0];
+                        const distance = (route.distance / 1000).toFixed(1);
+                        const duration = Math.round(route.duration / 60);
+
+                        const coords = route.geometry.coordinates.map(c => [c[1], c[0]]);
+                        const polyline = L.polyline(coords, {
+                            color: '#0d6efd',
+                            weight: 5,
+                            opacity: 0.8
+                        }).addTo(map);
+
+                        const popup = L.popup()
+                            .setLatLng([destLat, destLon])
+                            .setContent(`
+                                <div style="text-align:center;min-width:200px;">
+                                    <h6 class="fw-bold">🚗 Itinéraire</h6>
+                                    <hr>
+                                    <p><strong>Distance :</strong> ${distance} km</p>
+                                    <p><strong>Durée :</strong> ${duration} min</p>
+                                    <p><strong>Destination :</strong> ${destName || 'Établissement'}</p>
+                                    <button class="btn btn-sm btn-outline-secondary mt-2" onclick="this.closest('.leaflet-popup').remove()">
+                                        <i class="bi bi-x"></i> Fermer
+                                    </button>
+                                </div>
+                            `)
+                            .openOn(map);
+
+                        map.fitBounds(polyline.getBounds(), { padding: [50, 50] });
+
+                        showToast(`Itinéraire : ${distance} km - ${duration} min`);
+                    })
+                    .catch(function(error) {
+                        console.error('Erreur routing:', error);
+                        const osmUrl = `https://www.openstreetmap.org/directions?from=${startLat},${startLon}&to=${destLat},${destLat}`;
+                        window.open(osmUrl, '_blank');
+                        showToast(`Itinéraire vers ${destName || 'établissement'} (OSM)`);
+                    });
+
+            },
+            function() {
+                showToast('Activez la géolocalisation');
+            },
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        );
+    }
+
+    // ================================================================
+    // OUTIL DE MESURE MANUELLE
+    // ================================================================
+
+    function activerMesureManuelle() {
+        const panel = document.getElementById('distanceToolPanel');
+        const isVisible = panel.classList.contains('visible');
+
+        if (isVisible) {
+            fermerDistanceTool();
+            return;
+        }
+
+        panel.classList.add('visible');
+        distanceModeActive = true;
+        document.getElementById('distanceStatusText').textContent = '👆 Cliquez sur la carte pour définir votre position';
+        document.getElementById('distanceResult').classList.remove('visible');
+        document.getElementById('map').style.cursor = 'crosshair';
+
+        showToast('👆 Cliquez sur la carte pour mesurer la distance jusqu\'au poste de santé le plus proche');
+    }
+
+    function traiterClicMesure(e) {
+        if (!distanceModeActive) return;
+
+        const lat = e.latlng.lat;
+        const lon = e.latlng.lng;
+
+        document.getElementById('distanceStatusText').textContent = '📏 Calcul de la distance...';
+
+        let nearest = null;
+        let minDistance = Infinity;
+
+        markersLayer.eachLayer(layer => {
+            if (layer.feature) {
+                const coords = layer.feature.geometry.coordinates;
+                const dist = calculerDistance(lat, lon, coords[1], coords[0]);
+                if (dist < minDistance) {
+                    minDistance = dist;
+                    nearest = { layer, feature: layer.feature, distance: dist };
+                }
+            }
+        });
+
+        if (!nearest) {
+            document.getElementById('distanceStatusText').textContent = '❌ Aucun établissement trouvé à proximité';
+            showToast('❌ Aucun établissement trouvé à proximité');
+            return;
+        }
+
+        afficherResultatMesure(lat, lon, nearest, minDistance);
+    }
+
+    function afficherResultatMesure(lat, lon, nearest, distance) {
+        nettoyerDistanceTool();
+
+        const coords = nearest.feature.geometry.coordinates;
+        const props = nearest.feature.properties || {};
+        const typeColor = COLORS[props.type] || COLORS['default'];
+
+        distanceUserMarker = L.marker([lat, lon], {
+            icon: L.divIcon({
+                className: 'distance-marker-user',
+                html: `<div style="background:#0d6efd;color:white;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;border:3px solid white;box-shadow:0 2px 10px rgba(0,0,0,0.3);"><i class="bi bi-crosshair"></i></div>`,
+                iconSize: [32, 32],
+                iconAnchor: [16, 16]
+            })
+        }).addTo(map).bindPopup(`📍 Position sélectionnée<br><small>Lat: ${lat.toFixed(6)}, Lon: ${lon.toFixed(6)}</small>`).openPopup();
+
+        distanceTargetMarker = L.marker([coords[1], coords[0]], {
+            icon: L.divIcon({
+                className: 'distance-marker-target',
+                html: `<div style="background:${typeColor};color:white;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;border:3px solid white;box-shadow:0 2px 10px rgba(0,0,0,0.3);"><i class="bi bi-hospital"></i></div>`,
+                iconSize: [36, 36],
+                iconAnchor: [18, 18]
+            })
+        }).addTo(map).bindPopup(`
+            <div style="min-width:200px;">
+                <div class="popup-title" style="color:${typeColor};">${props.nom || 'Sans nom'}</div>
+                <div class="popup-row"><span class="popup-label">Type :</span> ${props.type || 'Inconnu'}</div>
+                <div class="popup-row"><span class="popup-label">Distance :</span> <strong>${distance.toFixed(2)} km</strong></div>
+                <button class="btn btn-sm btn-primary mt-2" onclick="zoomToFeature(${props.id || 0})">
+                    <i class="bi bi-zoom-in"></i> Zoom
+                </button>
+            </div>
+        `).openPopup();
+
+        distanceLine = L.polyline(
+            [[lat, lon], [coords[1], coords[0]]],
+            {
+                color: '#0d6efd',
+                weight: 4,
+                dashArray: '10, 8',
+                opacity: 0.9,
+                className: 'distance-line'
+            }
+        ).addTo(map);
+
+        const midLat = (lat + coords[1]) / 2;
+        const midLon = (lon + coords[0]) / 2;
+        const distanceText = distance.toFixed(2) + ' km';
+
+        distanceLabelMarker = L.marker([midLat, midLon], {
+            icon: L.divIcon({
+                className: 'distance-label',
+                html: `<div style="background:var(--bg-card);padding:6px 16px;border-radius:14px;border:2px solid #0d6efd;box-shadow:0 4px 16px rgba(0,0,0,0.15);font-weight:800;font-size:0.9rem;color:var(--text-primary);white-space:nowrap;">📏 ${distanceText}</div>`,
+                iconSize: [120, 40],
+                iconAnchor: [60, 20]
+            }),
+            interactive: false
+        }).addTo(map);
+
+        distancePrecisionCircle = L.circle([lat, lon], {
+            radius: 30,
+            color: '#0d6efd',
+            fillColor: '#0d6efd',
+            fillOpacity: 0.08,
+            weight: 1,
+            dashArray: '4, 4'
+        }).addTo(map);
+
+        document.getElementById('distanceResult').classList.add('visible');
+        document.getElementById('distanceValue').textContent = distance.toFixed(2) + ' km';
+        document.getElementById('distanceTarget').textContent = props.nom || 'Sans nom';
+        document.getElementById('distanceTargetType').textContent = props.type || 'Inconnu';
+        document.getElementById('distanceStatusText').textContent = '✅ Mesure terminée';
+
+        const bounds = L.latLngBounds([
+            [lat, lon],
+            [coords[1], coords[0]]
+        ]);
+        map.fitBounds(bounds, { padding: [80, 80] });
+
+        showToast(`📏 Distance mesurée : ${distance.toFixed(2)} km jusqu'à ${props.nom || 'l\'établissement'}`);
+    }
+
+    function annulerSelectionDistance() {
+        nettoyerDistanceTool();
+        document.getElementById('distanceStatusText').textContent = '👆 Cliquez sur la carte pour définir votre position';
+        document.getElementById('distanceResult').classList.remove('visible');
+        showToast('🗑️ Sélection annulée');
+    }
+
+    function fermerDistanceTool() {
+        document.getElementById('distanceToolPanel').classList.remove('visible');
+        distanceModeActive = false;
+        document.getElementById('map').style.cursor = '';
+        nettoyerDistanceTool();
+    }
+
+    function nettoyerDistanceTool() {
+        if (distanceLine) { map.removeLayer(distanceLine); distanceLine = null; }
+        if (distanceUserMarker) { map.removeLayer(distanceUserMarker); distanceUserMarker = null; }
+        if (distanceTargetMarker) { map.removeLayer(distanceTargetMarker); distanceTargetMarker = null; }
+        if (distanceLabelMarker) { map.removeLayer(distanceLabelMarker); distanceLabelMarker = null; }
+        if (distancePrecisionCircle) { map.removeLayer(distancePrecisionCircle); distancePrecisionCircle = null; }
+        distanceTargetFeature = null;
+        if (selectedFeature) {
+            selectedFeature.layer.setStyle({ weight: 2.5, color: '#ffffff', fillOpacity: 0.88 });
+            selectedFeature = null;
+        }
+    }
+
+    // ================================================================
+    // CARTE DE CHALEUR
+    // ================================================================
+
+    function toggleHeatmap() {
+        heatmapActive = !heatmapActive;
+        const btn = document.getElementById('btnHeatmap');
+
+        if (heatmapActive) {
+            const points = allFeatures.map(f => {
+                const c = f.geometry.coordinates;
+                return [c[1], c[0], 0.8];
+            });
+
+            if (heatLayer) {
+                map.removeLayer(heatLayer);
+            }
+
+            heatLayer = L.heatLayer(points, {
+                radius: 30,
+                blur: 20,
+                maxZoom: 16,
+                gradient: {
+                    0.2: '#1CB57C',
+                    0.4: '#FF9A56',
+                    0.6: '#FF6B35',
+                    0.8: '#dc3545',
+                    1: '#8B0000'
+                }
+            }).addTo(map);
+
+            btn.classList.add('active');
+            btn.innerHTML = '<i class="bi bi-thermometer-sun"></i> Heatmap ON';
+            showToast('🔥 Carte de chaleur activée — densité des établissements');
+        } else {
+            if (heatLayer) {
+                map.removeLayer(heatLayer);
+                heatLayer = null;
+            }
+            btn.classList.remove('active');
+            btn.innerHTML = '<i class="bi bi-thermometer-sun"></i> Heatmap';
+            showToast('🗺️ Retour aux marqueurs');
+        }
+    }
+
+    // ================================================================
+    // MESURE DE DISTANCE LIBRE
+    // ================================================================
+
+    function toggleMesure() {
+        measureActive = !measureActive;
+        const btn = document.getElementById('btnMeasureToolbar');
+        btn.classList.toggle('active', measureActive);
+
+        if (measureActive) {
+            showToast('📏 Cliquez sur la carte pour mesurer une distance (double-clic pour terminer)');
+            map.on('click', onMeasureClick);
+            map.doubleClickZoom.disable();
+            map.on('dblclick', onMeasureFinish);
+        } else {
+            arreterMesure();
+        }
+    }
+
+    function onMeasureClick(e) {
+        if (!measureActive) return;
+
+        measurePoints.push(e.latlng);
+
+        const marker = L.circleMarker(e.latlng, {
+            radius: 5, color: '#212529', fillColor: '#FF6B35', fillOpacity: 1, weight: 2
+        }).addTo(map);
+        measureMarkers.push(marker);
+
+        if (measurePoints.length > 1) {
+            if (measureLine) map.removeLayer(measureLine);
+            measureLine = L.polyline(measurePoints, { color: '#212529', weight: 3, dashArray: '6,6' }).addTo(map);
+
+            measureTotalDistance = 0;
+            for (let i = 1; i < measurePoints.length; i++) {
+                measureTotalDistance += calculerDistance(
+                    measurePoints[i-1].lat, measurePoints[i-1].lng,
+                    measurePoints[i].lat, measurePoints[i].lng
+                );
+            }
+
+            document.getElementById('measureResult').style.display = 'flex';
+            document.getElementById('measureDistanceValue').textContent = measureTotalDistance.toFixed(2) + ' km';
+        }
+    }
+
+    function onMeasureFinish(e) {
+        L.DomEvent.stop(e);
+        showToast('✅ Mesure terminée : ' + measureTotalDistance.toFixed(2) + ' km');
+        measureActive = false;
+        document.getElementById('btnMeasureToolbar')?.classList.remove('active');
+        map.off('click', onMeasureClick);
+        map.off('dblclick', onMeasureFinish);
+        map.doubleClickZoom.enable();
+    }
+
+    function arreterMesure() {
+        measureActive = false;
+        measurePoints = [];
+        measureTotalDistance = 0;
+        document.getElementById('btnMeasureToolbar')?.classList.remove('active');
+        document.getElementById('measureResult').style.display = 'none';
+        map.off('click', onMeasureClick);
+        map.off('dblclick', onMeasureFinish);
+        map.doubleClickZoom.enable();
+        measureMarkers.forEach(m => map.removeLayer(m));
+        measureMarkers = [];
+        if (measureLine) {
+            map.removeLayer(measureLine);
+            measureLine = null;
+        }
+    }
+
+    // ================================================================
+    // PLEIN ÉCRAN
+    // ================================================================
+
+    function toggleFullscreen() {
+        const container = document.querySelector('.map-container');
+        isFullscreen = !isFullscreen;
+        container.classList.toggle('map-fullscreen', isFullscreen);
+
+        const btn = document.getElementById('btnFullscreenToolbar');
+        btn.innerHTML = isFullscreen
+            ? '<i class="bi bi-fullscreen-exit"></i> Quitter'
+            : '<i class="bi bi-arrows-fullscreen"></i> Plein écran';
+
+        setTimeout(() => map.invalidateSize(), 250);
+    }
+
+    // ================================================================
+    // PARTAGER LA VUE
+    // ================================================================
+
+    function partagerVue() {
+        const center = map.getCenter();
+        const zoom = map.getZoom();
+        const url = new URL(window.location.href);
+        url.searchParams.set('lat', center.lat.toFixed(6));
+        url.searchParams.set('lon', center.lng.toFixed(6));
+        url.searchParams.set('zoom', zoom);
+
+        const shareUrl = url.toString();
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(shareUrl).then(() => {
+                showToast('🔗 Lien de la vue actuelle copié dans le presse-papiers');
+            }).catch(() => {
+                promptShareUrl(shareUrl);
+            });
+        } else {
+            promptShareUrl(shareUrl);
+        }
+    }
+
+    function promptShareUrl(shareUrl) {
+        window.prompt('Copiez ce lien pour partager cette vue :', shareUrl);
+    }
+
+    function appliquerVuePartagee() {
+        const params = new URLSearchParams(window.location.search);
+
+        const id = params.get('id');
+        const lat = parseFloat(params.get('lat'));
+        const lon = parseFloat(params.get('lon'));
+        const zoom = parseInt(params.get('zoom'), 10) || 16;
+        const route = params.get('route');
+        const type = params.get('type');
+
+        if (type) {
+            let typeButton = document.querySelector('#typeFilters .btn[data-type="' + type + '"]');
+            if (!typeButton) {
+                const normalize = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+                const target = normalize(type);
+                typeButton = Array.from(document.querySelectorAll('#typeFilters .btn[data-type]')).find(
+                    b => normalize(b.dataset.type).includes(target) || target.includes(normalize(b.dataset.type))
+                );
+            }
+            if (typeButton) {
+                typeButton.click();
+                showToast('🔎 Filtre appliqué : ' + typeButton.dataset.type);
+            }
+        }
+
+        if (id) {
+            setTimeout(() => zoomToFeature(parseInt(id, 10)), 500);
+            return;
+        }
+
+        if (!isNaN(lat) && !isNaN(lon)) {
+            map.setView([lat, lon], zoom);
+
+            let matched = null;
+            markersLayer.eachLayer(function (layer) {
+                const latlng = layer.getLatLng ? layer.getLatLng() : null;
+                if (latlng && Math.abs(latlng.lat - lat) < 0.0001 && Math.abs(latlng.lng - lon) < 0.0001) {
+                    matched = layer;
+                }
+            });
+
+            if (matched) {
+                selectFeature(matched.feature, matched);
+                matched.openPopup();
+            } else if (!route) {
+                // Vue partagée simple
+            } else {
+                L.marker([lat, lon]).addTo(map).bindPopup('Position demandée').openPopup();
+            }
+
+            if (route) {
+                setTimeout(() => tracerItineraire(lat, lon, route), 600);
+            }
+        }
+    }
+
+    // ================================================================
+    // EXPORTER LA CARTE
+    // ================================================================
+
+    function exporterCarte() {
+        const geojson = {
+            type: "FeatureCollection",
+            features: allFeatures
+        };
+
+        const blob = new Blob([JSON.stringify(geojson, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'carte_sanitaire_thies_ouest.geojson';
+        a.click();
+        URL.revokeObjectURL(url);
+
+        showToast('📤 Export GeoJSON terminé — ' + allFeatures.length + ' établissements');
+    }
+
+    // ================================================================
+    // UTILITAIRES GLOBAUX
+    // ================================================================
+
+    function zoomToFeature(id) {
+        let found = false;
+        markersLayer.eachLayer(layer => {
+            if (layer.feature && layer.feature.properties?.id === id) {
+                const latlng = layer.getLatLng();
+                if (latlng) {
+                    map.setView(latlng, 16);
+                    selectFeature(layer.feature, layer);
+                    found = true;
+                }
+            }
+        });
+
+        if (!found) {
+            const feature = allFeatures.find(f => f.properties?.id === id);
+            if (feature) {
+                const coords = feature.geometry.coordinates;
+                map.setView([coords[1], coords[0]], 16);
+                showToast('Établissement trouvé dans les données');
+            } else {
+                showToast('Établissement non trouvé');
+            }
+        }
+    }
+
+    function clearAllLayers() {
+        clearBuffer();
+        if (routingControl) {
+            map.removeControl(routingControl);
+            routingControl = null;
+        }
+        if (nearestMarker) {
+            map.removeLayer(nearestMarker);
+            nearestMarker = null;
+        }
+        if (userLocationMarker) {
+            map.removeLayer(userLocationMarker);
+            userLocationMarker = null;
+        }
+        if (heatLayer) {
+            map.removeLayer(heatLayer);
+            heatLayer = null;
+            heatmapActive = false;
+            document.getElementById('btnHeatmap').classList.remove('active');
+            document.getElementById('btnHeatmap').innerHTML = '<i class="bi bi-thermometer-sun"></i> Heatmap';
+        }
+        nettoyerDistanceTool();
+        arreterMesure();
+        document.getElementById('isochroneResult').style.display = 'none';
+        document.getElementById('distanceToolPanel').classList.remove('visible');
+        distanceModeActive = false;
+        document.getElementById('map').style.cursor = '';
+        showToast('✅ Tout effacé');
+    }
+
+    function rechargerCarte() {
+        chargerEtablissements();
+        clearAllLayers();
+        showToast('Données actualisées');
+    }
+
+    function imprimerCarte() {
+        showToast('🖨️ Ouverture de l\'impression');
+        setTimeout(() => window.print(), 300);
+    }
+
+    function mesurerDistanceDepuisCoordonnees(lat, lon) {
+        // Fonction simple pour mesurer depuis un point donné
+        const userPoint = L.latLng(lat, lon);
+        let nearest = null;
+        let minDist = Infinity;
+
+        markersLayer.eachLayer(layer => {
+            if (layer.feature) {
+                const coords = layer.feature.geometry.coordinates;
+                const dist = calculerDistance(lat, lon, coords[1], coords[0]);
+                if (dist < minDist) {
+                    minDist = dist;
+                    nearest = { feature: layer.feature, distance: dist };
+                }
+            }
+        });
+
+        if (nearest) {
+            showToast(`📏 Distance: ${nearest.distance.toFixed(2)} km jusqu'à ${nearest.feature.properties?.nom || 'l\'établissement'}`);
+            // Afficher sur la carte
+            const coords = nearest.feature.geometry.coordinates;
+            const line = L.polyline([[lat, lon], [coords[1], coords[0]]], {
+                color: '#0d6efd',
+                weight: 3,
+                dashArray: '8, 6'
+            }).addTo(map);
+            setTimeout(() => map.removeLayer(line), 5000);
+        } else {
+            showToast('Aucun établissement trouvé');
+        }
+    }
+
+    // ================================================================
+    // EXPOSER LES FONCTIONS GLOBALEMENT
+    // ================================================================
+
+    window.rechargerCarte = rechargerCarte;
+    window.clearAllLayers = clearAllLayers;
+    window.createBuffer = createBuffer;
+    window.clearBuffer = clearBuffer;
+    window.calculerIsochrone = calculerIsochrone;
+    window.trouverPlusProche = trouverPlusProche;
+    window.trouverPlusProcheDepuis = trouverPlusProcheDepuis;
+    window.tracerItineraire = tracerItineraire;
+    window.zoomToFeature = zoomToFeature;
+    window.toggleSidePanel = toggleSidePanel;
+    window.exporterZone = exporterZone;
+    window.showToast = showToast;
+    window.toggleTableView = toggleTableView;
+    window.tablePagePrev = tablePagePrev;
+    window.tablePageNext = tablePageNext;
+    window.imprimerCarte = imprimerCarte;
+    window.toggleHeatmap = toggleHeatmap;
+    window.exporterCarte = exporterCarte;
+    window.toggleMesure = toggleMesure;
+    window.arreterMesure = arreterMesure;
+    window.toggleFullscreen = toggleFullscreen;
+    window.partagerVue = partagerVue;
+    window.activerMesureManuelle = activerMesureManuelle;
+    window.fermerDistanceTool = fermerDistanceTool;
+    window.annulerSelectionDistance = annulerSelectionDistance;
+    window.mesurerDistanceDepuisCoordonnees = mesurerDistanceDepuisCoordonnees;
+
+    console.log('✅ Carte sanitaire initialisée avec succès');
+</script>
+
+<style>
+    .distance-line {
+        stroke: var(--distance-line-color);
+        stroke-width: 3;
+        stroke-dasharray: 8, 6;
+        opacity: 0.9;
+        animation: dashFlow 2s linear infinite;
+    }
+
+    @keyframes dashFlow {
+        to { stroke-dashoffset: -20; }
+    }
+
+    .distance-marker-user {
+        animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    .distance-marker-target {
+        animation: pulseTarget 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulseTarget {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.2); opacity: 0.7; }
+    }
+
+    .map-fullscreen {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        z-index: 99999 !important;
+        border-radius: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        display: flex !important;
+        flex-direction: column !important;
+        background: var(--bg-card) !important;
+    }
+
+    .map-fullscreen #map {
+        flex: 1 !important;
+        height: auto !important;
+        border-radius: 0 !important;
+    }
+
+    .leaflet-control-layers {
+        border-radius: 10px !important;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.18) !important;
+        border: none !important;
+        background: var(--bg-card) !important;
+        border-color: var(--border-color) !important;
+        transition: background 0.4s ease, border-color 0.4s ease;
+    }
+
+    .leaflet-control-layers-toggle {
+        width: 38px !important;
+        height: 38px !important;
+        background-size: 20px 20px !important;
+    }
+
+    .badge-type {
+        padding: 3px 12px;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: var(--badge-type-text);
+        display: inline-block;
+    }
+
+    .badge-statut {
+        padding: 2px 10px;
+        border-radius: 20px;
+        font-size: 0.65rem;
+        font-weight: 600;
+        color: var(--badge-statut-text);
+        display: inline-block;
+    }
+
+    .dataTables_wrapper .dataTables_filter { display: none; }
+    .dataTables_wrapper .dataTables_length { display: none; }
+    .dataTables_wrapper .dataTables_info { display: none; }
+    .dataTables_wrapper .dataTables_paginate { display: none; }
+
+    .dataTables_wrapper .dt-buttons {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+
+    .table-wrapper {
+        padding: 16px 20px 20px;
+        overflow-x: auto;
+    }
+
+    .table-footer {
+        padding: 12px 22px;
+        border-top: 1px solid var(--border-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        font-size: 0.82rem;
+        color: var(--table-footer-text);
+        background: var(--bg-table-footer);
+        transition: background 0.4s ease, color 0.4s ease, border-color 0.4s ease;
+    }
+
+    .table-footer .pagination-info {
+        font-weight: 500;
+    }
+
+    .table-footer .pagination-info strong {
+        color: var(--table-footer-strong);
+    }
+
+    /* Override pour les popups Leaflet en mode sombre */
+    [data-theme="dark"] .leaflet-popup-content-wrapper {
+        background: #1A2332 !important;
+        color: #E8EDF2 !important;
+    }
+
+    [data-theme="dark"] .leaflet-popup-tip {
+        background: #1A2332 !important;
+    }
+
+    [data-theme="dark"] .leaflet-control-zoom a {
+        background: #1A2332 !important;
+        color: #E8EDF2 !important;
+        border-color: rgba(255,255,255,0.1) !important;
+    }
+
+    [data-theme="dark"] .leaflet-control-zoom a:hover {
+        background: #2A3A4A !important;
+    }
+
+    [data-theme="dark"] .leaflet-control-attribution {
+        background: rgba(26, 35, 50, 0.85) !important;
+        color: #8A97A5 !important;
+    }
+</style>
+
+{% endblock %}

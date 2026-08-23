@@ -1,0 +1,8 @@
+Django==4.2.7
+django-leaflet==0.29.0
+psycopg[binary]
+Pillow
+djangorestframework
+djangorestframework-gis
+django-cors-headers
+drf-yasg
