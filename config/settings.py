@@ -2,6 +2,8 @@ from pathlib import Path
 import os
 from datetime import timedelta
 
+import dj_database_url
+
 
 # ============================================================
 # BASE DU PROJET
@@ -14,25 +16,41 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SÉCURITÉ
 # ============================================================
 
-SECRET_KEY = "django-insecure-s%8o!fsf*=bn$c10ac#o!opk0n6eagbl+hu$-p_ogt#lcc6y9x"
+SECRET_KEY = os.getenv(
+    "SECRET_KEY",
+    "django-insecure-change-this-key-in-production"
+)
 
-DEBUG = True
+DEBUG = os.getenv("DEBUG", "True").lower() == "true"
+
+
+# ============================================================
+# HÔTES AUTORISÉS
+# ============================================================
 
 ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
 ]
 
+render_hostname = os.getenv("RENDER_EXTERNAL_HOSTNAME")
+
+if render_hostname:
+    ALLOWED_HOSTS.append(render_hostname)
+
 
 # ============================================================
-# GEODJANGO / QGIS 4.0.3
+# GEODJANGO
 # ============================================================
 
-QGIS_BIN = r"C:\Program Files\QGIS 4.0.3\bin"
-QGIS_PROJ = r"C:\Program Files\QGIS 4.0.3\share\proj"
-QGIS_GDAL_DATA = r"C:\Program Files\QGIS 4.0.3\share\gdal"
+# Configuration QGIS uniquement en local Windows.
+# Render utilise son environnement Linux et n'utilise pas ces chemins.
 
 if os.name == "nt":
+
+    QGIS_BIN = r"C:\Program Files\QGIS 4.0.3\bin"
+    QGIS_PROJ = r"C:\Program Files\QGIS 4.0.3\share\proj"
+    QGIS_GDAL_DATA = r"C:\Program Files\QGIS 4.0.3\share\gdal"
 
     if os.path.exists(QGIS_BIN):
         os.add_dll_directory(QGIS_BIN)
@@ -50,20 +68,15 @@ if os.name == "nt":
     if os.path.exists(QGIS_GDAL_DATA):
         os.environ["GDAL_DATA"] = QGIS_GDAL_DATA
 
+    GDAL_LIBRARY_PATH = os.path.join(
+        QGIS_BIN,
+        "gdal313.dll"
+    )
 
-# ============================================================
-# BIBLIOTHÈQUES GDAL / GEOS
-# ============================================================
-
-GDAL_LIBRARY_PATH = os.path.join(
-    QGIS_BIN,
-    "gdal313.dll"
-)
-
-GEOS_LIBRARY_PATH = os.path.join(
-    QGIS_BIN,
-    "geos_c.dll"
-)
+    GEOS_LIBRARY_PATH = os.path.join(
+        QGIS_BIN,
+        "geos_c.dll"
+    )
 
 
 # ============================================================
@@ -72,10 +85,7 @@ GEOS_LIBRARY_PATH = os.path.join(
 
 INSTALLED_APPS = [
 
-    # --------------------------------------------------------
     # Django
-    # --------------------------------------------------------
-
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -83,36 +93,21 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
 
-    # --------------------------------------------------------
     # GeoDjango
-    # --------------------------------------------------------
-
     "django.contrib.gis",
 
-    # --------------------------------------------------------
     # API REST
-    # --------------------------------------------------------
-
     "rest_framework",
     "rest_framework_gis",
     "django_filters",
 
-    # --------------------------------------------------------
     # CORS
-    # --------------------------------------------------------
-
     "corsheaders",
 
-    # --------------------------------------------------------
-    # Swagger / OpenAPI
-    # --------------------------------------------------------
-
+    # Swagger
     "drf_yasg",
 
-    # --------------------------------------------------------
-    # Application du projet
-    # --------------------------------------------------------
-
+    # Application
     "sante",
 ]
 
@@ -122,10 +117,12 @@ INSTALLED_APPS = [
 # ============================================================
 
 MIDDLEWARE = [
-
     "corsheaders.middleware.CorsMiddleware",
 
     "django.middleware.security.SecurityMiddleware",
+
+    # Fichiers statiques en production
+    "whitenoise.middleware.WhiteNoiseMiddleware",
 
     "django.contrib.sessions.middleware.SessionMiddleware",
 
@@ -153,7 +150,6 @@ ROOT_URLCONF = "config.urls"
 # ============================================================
 
 TEMPLATES = [
-
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
 
@@ -165,13 +161,9 @@ TEMPLATES = [
 
         "OPTIONS": {
             "context_processors": [
-
                 "django.template.context_processors.debug",
-
                 "django.template.context_processors.request",
-
                 "django.contrib.auth.context_processors.auth",
-
                 "django.contrib.messages.context_processors.messages",
             ],
         },
@@ -190,23 +182,33 @@ WSGI_APPLICATION = "config.wsgi.application"
 # BASE DE DONNÉES POSTGRESQL / POSTGIS
 # ============================================================
 
-DATABASES = {
+DATABASE_URL = os.getenv("DATABASE_URL")
 
-    "default": {
 
-        "ENGINE": "django.contrib.gis.db.backends.postgis",
+if DATABASE_URL:
 
-        "NAME": "infrastructure_sanitaire",
-
-        "USER": "postgres",
-
-        "PASSWORD": "deme",
-
-        "HOST": "localhost",
-
-        "PORT": "5432",
+    # Production : Render PostgreSQL / PostGIS
+    DATABASES = {
+        "default": dj_database_url.parse(
+            DATABASE_URL,
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
     }
-}
+
+else:
+
+    # Développement local
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.contrib.gis.db.backends.postgis",
+            "NAME": "infrastructure_sanitaire",
+            "USER": "postgres",
+            "PASSWORD": "deme",
+            "HOST": "localhost",
+            "PORT": "5432",
+        }
+    }
 
 
 # ============================================================
@@ -214,25 +216,21 @@ DATABASES = {
 # ============================================================
 
 AUTH_PASSWORD_VALIDATORS = [
-
     {
         "NAME":
-        "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+            "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
-
     {
         "NAME":
-        "django.contrib.auth.password_validation.MinimumLengthValidator",
+            "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
-
     {
         "NAME":
-        "django.contrib.auth.password_validation.CommonPasswordValidator",
+            "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
-
     {
         "NAME":
-        "django.contrib.auth.password_validation.NumericPasswordValidator",
+            "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
@@ -263,6 +261,20 @@ STATICFILES_DIRS = [
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 
+# WhiteNoise
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+
+    "staticfiles": {
+        "BACKEND": (
+            "whitenoise.storage.CompressedManifestStaticFilesStorage"
+        ),
+    },
+}
+
+
 # ============================================================
 # FICHIERS MÉDIAS
 # ============================================================
@@ -278,56 +290,28 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 REST_FRAMEWORK = {
 
-    # --------------------------------------------------------
-    # Authentification
-    # --------------------------------------------------------
-
     "DEFAULT_AUTHENTICATION_CLASSES": (
-
         "rest_framework.authentication.SessionAuthentication",
-
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
 
-    # --------------------------------------------------------
-    # Permissions
-    # --------------------------------------------------------
-
     "DEFAULT_PERMISSION_CLASSES": (
-
         "rest_framework.permissions.AllowAny",
     ),
 
-    # --------------------------------------------------------
-    # Filtres
-    # --------------------------------------------------------
-
     "DEFAULT_FILTER_BACKENDS": (
-
         "django_filters.rest_framework.DjangoFilterBackend",
-
         "rest_framework.filters.SearchFilter",
-
         "rest_framework.filters.OrderingFilter",
     ),
-
-    # --------------------------------------------------------
-    # Pagination
-    # --------------------------------------------------------
 
     "DEFAULT_PAGINATION_CLASS":
         "rest_framework.pagination.PageNumberPagination",
 
     "PAGE_SIZE": 20,
 
-    # --------------------------------------------------------
-    # Formats
-    # --------------------------------------------------------
-
     "DEFAULT_RENDERER_CLASSES": (
-
         "rest_framework.renderers.JSONRenderer",
-
         "rest_framework.renderers.BrowsableAPIRenderer",
     ),
 }
@@ -385,17 +369,25 @@ SIMPLE_JWT = {
 # ============================================================
 
 CORS_ALLOWED_ORIGINS = [
-
     "http://localhost:3000",
-
     "http://127.0.0.1:3000",
-
     "http://localhost:8000",
-
     "http://127.0.0.1:8000",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
+
+
+# ============================================================
+# CSRF
+# ============================================================
+
+CSRF_TRUSTED_ORIGINS = []
+
+render_url = os.getenv("RENDER_EXTERNAL_URL")
+
+if render_url:
+    CSRF_TRUSTED_ORIGINS.append(render_url)
 
 
 # ============================================================
@@ -407,13 +399,9 @@ SWAGGER_SETTINGS = {
     "SECURITY_DEFINITIONS": {
 
         "Bearer": {
-
             "type": "apiKey",
-
             "name": "Authorization",
-
             "in": "header",
-
             "description":
                 "JWT Token : Bearer <votre_token>",
         }
@@ -446,19 +434,15 @@ LOGGING = {
     "formatters": {
 
         "verbose": {
-
             "format":
                 "{levelname} {asctime} {module} "
                 "{process:d} {thread:d} {message}",
-
             "style": "{",
         },
 
         "simple": {
-
             "format":
                 "{levelname} {asctime} {message}",
-
             "style": "{",
         },
     },
@@ -466,22 +450,15 @@ LOGGING = {
     "handlers": {
 
         "console": {
-
             "level": "INFO",
-
             "class": "logging.StreamHandler",
-
             "formatter": "simple",
         },
 
         "file": {
-
             "level": "INFO",
-
             "class": "logging.FileHandler",
-
             "filename": LOG_DIR / "django.log",
-
             "formatter": "verbose",
         },
     },
@@ -489,25 +466,19 @@ LOGGING = {
     "loggers": {
 
         "django": {
-
             "handlers": [
                 "console",
                 "file"
             ],
-
             "level": "INFO",
-
             "propagate": False,
         },
 
         "django.db.backends": {
-
             "handlers": [
                 "console"
             ],
-
             "level": "WARNING",
-
             "propagate": False,
         },
     },
