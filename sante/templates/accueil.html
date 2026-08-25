@@ -58,6 +58,10 @@
         --accordion-bg: #ffffff;
         --accordion-border: rgba(11, 138, 74, 0.12);
         --accordion-text: #1B2A38;
+        --chatbot-bg: #ffffff;
+        --chatbot-user-bubble: linear-gradient(135deg, #0B8A4A, #1CB57C);
+        --chatbot-bot-bubble: #F1F3F5;
+        --chatbot-text: #1B2A38;
     }
 
     /* Thème sombre */
@@ -109,6 +113,10 @@
         --accordion-bg: #1A2332;
         --accordion-border: rgba(255,255,255,0.08);
         --accordion-text: #E8EDF2;
+        --chatbot-bg: #1A2332;
+        --chatbot-user-bubble: linear-gradient(135deg, #0A5A3A, #1A8A5A);
+        --chatbot-bot-bubble: #2A3A4A;
+        --chatbot-text: #E8EDF2;
     }
 
     /* ============================================================
@@ -155,7 +163,7 @@
         left: 0;
         height: 4px;
         width: 0%;
-        background: linear-gradient(90deg, #FFD54F, #FF6B35, #4FC3F7, #AB47BC, #1CB57C);
+        background: linear-gradient(90deg, #0B8A4A, #1CB57C, #FFD54F, #FF6B35);
         z-index: 10001;
         transition: width 0.1s ease-out;
     }
@@ -167,7 +175,7 @@
     .back-to-top {
         position: fixed;
         bottom: 28px;
-        right: 28px;
+        left: 28px;
         width: 48px;
         height: 48px;
         border-radius: 50%;
@@ -325,6 +333,313 @@
     }
 
     /* ============================================================
+       CHATBOT IA (SantéBot)
+    ============================================================ */
+
+    .chatbot-toggle-home {
+        position: fixed;
+        bottom: 100px;
+        right: 26px;
+        z-index: 9999;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #0B8A4A, #1CB57C);
+        color: #fff;
+        border: none;
+        box-shadow: 0 8px 30px rgba(11, 138, 74, 0.5);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+    }
+
+    .chatbot-toggle-home:hover {
+        transform: scale(1.1) rotate(-10deg);
+        box-shadow: 0 12px 40px rgba(11, 138, 74, 0.6);
+    }
+
+    .chatbot-toggle-home .badge-online {
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: #28a745;
+        border: 2px solid var(--bg-card);
+        animation: pulseDot 2s infinite;
+    }
+
+    .chatbot-container-home {
+        position: fixed;
+        bottom: 180px;
+        right: 26px;
+        width: 380px;
+        max-height: 500px;
+        background: var(--chatbot-bg);
+        border-radius: 20px;
+        border: 1px solid var(--border-color);
+        box-shadow: var(--shadow-hover);
+        z-index: 9998;
+        display: none;
+        flex-direction: column;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .chatbot-container-home.open {
+        display: flex;
+        animation: slideUp 0.3s ease;
+    }
+
+    .chatbot-header-home {
+        padding: 16px 20px;
+        background: linear-gradient(135deg, #0B8A4A, #1CB57C);
+        color: #fff;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-shrink: 0;
+    }
+
+    .chatbot-header-home h6 {
+        margin: 0;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 1rem;
+    }
+
+    .chatbot-header-home h6 i {
+        font-size: 1.2rem;
+    }
+
+    .chatbot-header-home .btn-close-chat {
+        background: rgba(255,255,255,0.2);
+        border: none;
+        color: #fff;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .chatbot-header-home .btn-close-chat:hover {
+        background: rgba(255,255,255,0.4);
+        transform: rotate(90deg);
+    }
+
+    .chatbot-messages-home {
+        flex: 1;
+        overflow-y: auto;
+        padding: 16px 20px;
+        max-height: 350px;
+        min-height: 200px;
+        background: var(--body-bg);
+    }
+
+    .chatbot-messages-home::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .chatbot-messages-home::-webkit-scrollbar-thumb {
+        background: var(--primary-light);
+        border-radius: 10px;
+    }
+
+    .chat-message-home {
+        margin-bottom: 12px;
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        animation: fadeUp 0.3s ease;
+    }
+
+    .chat-message-home.bot {
+        flex-direction: row;
+    }
+
+    .chat-message-home.user {
+        flex-direction: row-reverse;
+    }
+
+    .chat-message-home .avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: 0.9rem;
+    }
+
+    .chat-message-home.bot .avatar {
+        background: linear-gradient(135deg, #0B8A4A, #1CB57C);
+        color: #fff;
+    }
+
+    .chat-message-home.user .avatar {
+        background: #6f42c1;
+        color: #fff;
+    }
+
+    .chat-message-home .bubble {
+        max-width: 80%;
+        padding: 10px 14px;
+        border-radius: 14px;
+        font-size: 0.88rem;
+        line-height: 1.6;
+        word-wrap: break-word;
+        color: var(--chatbot-text);
+    }
+
+    .chat-message-home.bot .bubble {
+        background: var(--chatbot-bot-bubble);
+        border: 1px solid var(--border-color);
+        border-bottom-left-radius: 4px;
+    }
+
+    .chat-message-home.user .bubble {
+        background: var(--chatbot-user-bubble);
+        color: #fff;
+        border-bottom-right-radius: 4px;
+    }
+
+    .chat-message-home .time {
+        font-size: 0.6rem;
+        color: var(--text-muted);
+        margin-top: 4px;
+        display: block;
+    }
+
+    .chatbot-input-area-home {
+        padding: 12px 16px;
+        border-top: 1px solid var(--border-color);
+        display: flex;
+        gap: 10px;
+        background: var(--chatbot-bg);
+        flex-shrink: 0;
+    }
+
+    .chatbot-input-area-home input {
+        flex: 1;
+        border: 2px solid var(--border-color);
+        border-radius: 24px;
+        padding: 8px 16px;
+        font-size: 0.85rem;
+        background: var(--body-bg);
+        color: var(--text-primary);
+        outline: none;
+        transition: border-color 0.3s ease;
+    }
+
+    .chatbot-input-area-home input:focus {
+        border-color: #0B8A4A;
+    }
+
+    .chatbot-input-area-home input::placeholder {
+        color: var(--text-muted);
+    }
+
+    .chatbot-input-area-home .btn-send-home {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: none;
+        background: linear-gradient(135deg, #0B8A4A, #1CB57C);
+        color: #fff;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+    }
+
+    .chatbot-input-area-home .btn-send-home:hover {
+        transform: scale(1.1);
+        box-shadow: 0 4px 16px rgba(11, 138, 74, 0.4);
+    }
+
+    .chatbot-input-area-home .btn-send-home:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .chatbot-suggestions-home {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        padding: 8px 16px 12px;
+        border-top: 1px solid var(--border-color);
+        background: var(--body-bg);
+        flex-shrink: 0;
+    }
+
+    .chatbot-suggestions-home .suggestion-btn-home {
+        padding: 4px 12px;
+        border-radius: 16px;
+        border: 1px solid var(--border-color);
+        background: var(--chatbot-bg);
+        color: var(--text-secondary);
+        font-size: 0.7rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-weight: 500;
+    }
+
+    .chatbot-suggestions-home .suggestion-btn-home:hover {
+        background: linear-gradient(135deg, #0B8A4A, #1CB57C);
+        color: #fff;
+        border-color: transparent;
+        transform: translateY(-2px);
+    }
+
+    .typing-indicator-home {
+        display: none;
+        padding: 8px 14px;
+        background: var(--chatbot-bot-bubble);
+        border-radius: 14px;
+        border: 1px solid var(--border-color);
+        width: fit-content;
+        margin-bottom: 12px;
+    }
+
+    .typing-indicator-home.active {
+        display: block;
+    }
+
+    .typing-indicator-home span {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--text-muted);
+        margin: 0 2px;
+        animation: typingBounce 1.4s infinite both;
+    }
+
+    .typing-indicator-home span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-indicator-home span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes typingBounce {
+        0%, 80%, 100% { transform: scale(0); }
+        40% { transform: scale(1); }
+    }
+
+    /* ============================================================
        HERO SECTION - PLEINE PAGE AVEC IMAGE GRANDE
     ============================================================ */
 
@@ -341,7 +656,6 @@
         overflow: hidden;
         margin-bottom: 0;
         border-radius: 0;
-        /* L'image occupe toute la largeur et hauteur */
     }
 
     /* Image de fond - occupe toute la surface */
@@ -356,7 +670,6 @@
         filter: brightness(0.65) saturate(1.2) contrast(1.1);
         z-index: 0;
         transform: scale(1);
-        /* L'image reste fixe pendant le scroll */
         background-attachment: fixed;
     }
 
@@ -436,7 +749,7 @@
     }
 
     .hero-content h1 .word-webgis {
-        background: linear-gradient(135deg, #FFD54F, #FFB300);
+        background: linear-gradient(135deg, #ffffff, #e2e2e1);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
@@ -444,7 +757,7 @@
     }
 
     .hero-content h1 .word-sanitaire {
-        background: linear-gradient(135deg, #4FC3F7, #0288D1);
+        background: linear-gradient(135deg, #f0f0f0, #c8c8c8);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
@@ -452,7 +765,7 @@
     }
 
     .hero-content h1 .word-de {
-        background: linear-gradient(135deg, #FF8A65, #FF5722);
+        background: linear-gradient(135deg, #ddd7d7, #cfcece);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
@@ -460,7 +773,7 @@
     }
 
     .hero-content h1 .word-thies {
-        background: linear-gradient(135deg, #FF6B35, #FF9A56);
+        background: linear-gradient(135deg, #e0d8d5, #c0b8b5);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
@@ -468,7 +781,7 @@
     }
 
     .hero-content h1 .word-ouest {
-        background: linear-gradient(135deg, #AB47BC, #7B1FA2);
+        background: linear-gradient(135deg, #e4dee6, #cbc9cc);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
@@ -482,8 +795,6 @@
         margin: 8px auto 0;
         border-radius: 3px;
         background: linear-gradient(90deg, #FFD54F, #FF6B35, #4FC3F7, #AB47BC, #1CB57C);
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
         box-shadow: 0 0 30px rgba(255, 213, 79, 0.2);
     }
 
@@ -537,7 +848,7 @@
     }
 
     /* ============================================================
-       RECHERCHE RAPIDE AVEC AUTOCOMPLÉTION (NOUVEAU)
+       RECHERCHE RAPIDE AVEC AUTOCOMPLÉTION
     ============================================================ */
 
     .hero-search-wrapper {
@@ -730,22 +1041,6 @@
         box-shadow: 0 8px 30px rgba(255, 255, 255, 0.2);
     }
 
-    .hero-content .btn-hero-ghost {
-        padding: 18px 30px;
-        border-radius: 50px;
-        font-weight: 700;
-        font-size: 1.15rem;
-        background: rgba(255, 255, 255, 0.10);
-        color: var(--hero-text);
-        border: 2px solid rgba(255, 255, 255, 0.2);
-        transition: all 0.3s ease;
-    }
-
-    .hero-content .btn-hero-ghost:hover {
-        background: rgba(255, 255, 255, 0.22);
-        transform: translateY(-4px);
-    }
-
     /* ============================================================
        STATISTIQUES MULTICOLORES
     ============================================================ */
@@ -869,7 +1164,7 @@
     }
 
     /* ============================================================
-       SECTION "COMMENT ÇA MARCHE" (NOUVEAU)
+       SECTION "COMMENT ÇA MARCHE"
     ============================================================ */
 
     .how-it-works-section {
@@ -1059,7 +1354,7 @@
     }
 
     /* ============================================================
-       APERÇU DE LA CARTE — MINI-CARTE INTERACTIVE (NOUVEAU)
+       APERÇU DE LA CARTE — MINI-CARTE INTERACTIVE
     ============================================================ */
 
     .map-preview-section {
@@ -1325,7 +1620,7 @@
     }
 
     /* ============================================================
-       FAQ — ACCORDÉON (NOUVEAU)
+       FAQ — ACCORDÉON
     ============================================================ */
 
     .faq-section {
@@ -1369,7 +1664,7 @@
     }
 
     /* ============================================================
-       PIED DE PAGE D'ACTIONS — partager / imprimer (NOUVEAU)
+       PIED DE PAGE D'ACTIONS — partager / imprimer
     ============================================================ */
 
     .page-actions {
@@ -1542,10 +1837,25 @@
 
         .back-to-top {
             bottom: 20px;
-            right: 20px;
+            left: 20px;
             width: 42px;
             height: 42px;
             font-size: 1.1rem;
+        }
+
+        .chatbot-container-home {
+            width: calc(100% - 20px);
+            right: 10px;
+            bottom: 170px;
+            max-height: 450px;
+        }
+
+        .chatbot-toggle-home {
+            bottom: 90px;
+            right: 16px;
+            width: 50px;
+            height: 50px;
+            font-size: 1.5rem;
         }
     }
 
@@ -1625,6 +1935,20 @@
         .urgency-section .btn-urgency {
             padding: 12px;
         }
+
+        .chatbot-container-home {
+            max-height: 380px;
+        }
+
+        .chatbot-messages-home {
+            max-height: 250px;
+            min-height: 150px;
+        }
+
+        .chatbot-suggestions-home .suggestion-btn-home {
+            font-size: 0.6rem;
+            padding: 3px 8px;
+        }
     }
 
     /* Animation pour l'apparition */
@@ -1641,7 +1965,8 @@
     /* Impression */
     @media print {
         .theme-selector-floating, .back-to-top, .scroll-progress-bar,
-        .hero-search-wrapper, .page-actions, .health-topbar, .main-navbar, footer {
+        .hero-search-wrapper, .page-actions, .health-topbar, .main-navbar, footer,
+        .chatbot-toggle-home, .chatbot-container-home {
             display: none !important;
         }
         .hero-section::before, .hero-section::after { position: absolute; }
@@ -1687,6 +2012,67 @@
 <button class="back-to-top" id="backToTopBtn" title="Retour en haut">
     <i class="bi bi-arrow-up"></i>
 </button>
+
+<!-- ============================================================
+    CHATBOT IA (SantéBot) - BOUTON TOGGLE
+============================================================ -->
+
+<button class="chatbot-toggle-home" id="chatbotToggleHome" title="Poser une question à SantéBot" aria-label="Ouvrir le chatbot SantéBot">
+    <i class="bi bi-robot"></i>
+    <span class="badge-online"></span>
+</button>
+
+<!-- ============================================================
+    CHATBOT IA (SantéBot) - CONTENEUR
+============================================================ -->
+
+<div class="chatbot-container-home" id="chatbotContainerHome">
+    <div class="chatbot-header-home">
+        <h6>
+            <i class="bi bi-robot"></i>
+            SantéBot <small style="font-weight:400;font-size:0.7rem;opacity:0.8;">IA</small>
+        </h6>
+        <button class="btn-close-chat" onclick="toggleChatbotHome()" title="Fermer">&times;</button>
+    </div>
+
+    <div class="chatbot-messages-home" id="chatbotMessagesHome">
+        <!-- Messages -->
+        <div class="chat-message-home bot">
+            <div class="avatar"><i class="bi bi-robot"></i></div>
+            <div class="bubble">
+                Bonjour ! 👋 Je suis <strong>SantéBot</strong>, votre assistant IA pour les questions de santé sur Thiès Ouest.<br><br>
+                Je peux vous aider avec :
+                <ul style="margin:6px 0 0;padding-left:16px;font-size:0.82rem;">
+                    <li>🏥 <strong>Hôpitaux et cliniques</strong></li>
+                    <li>💊 <strong>Pharmacies</strong></li>
+                    <li>🚑 <strong>Urgences</strong> (numéros d'appel)</li>
+                    <li>📊 <strong>Statistiques sanitaires</strong></li>
+                    <li>💡 <strong>Conseils de prévention</strong></li>
+                    <li>💉 <strong>Vaccination</strong></li>
+                </ul>
+                <span class="time">À l'instant</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Suggestions -->
+    <div class="chatbot-suggestions-home" id="suggestionsContainerHome">
+        <button class="suggestion-btn-home" onclick="askQuestionHome('Quels sont les hôpitaux disponibles ?')">🏥 Hôpitaux</button>
+        <button class="suggestion-btn-home" onclick="askQuestionHome('Où trouver une pharmacie de garde ?')">💊 Pharmacies</button>
+        <button class="suggestion-btn-home" onclick="askQuestionHome('Comment accéder aux soins d\'urgence ?')">🚑 Urgences</button>
+        <button class="suggestion-btn-home" onclick="askQuestionHome('Quelle est la couverture sanitaire ?')">📊 Couverture</button>
+        <button class="suggestion-btn-home" onclick="askQuestionHome('Conseils pour une bonne santé')">💡 Conseils</button>
+        <button class="suggestion-btn-home" onclick="askQuestionHome('Informations sur la vaccination')">💉 Vaccination</button>
+    </div>
+
+    <!-- Zone de saisie -->
+    <div class="chatbot-input-area-home">
+        <input type="text" id="chatbotInputHome" placeholder="Posez votre question sur la santé..." onkeypress="if(event.key==='Enter') sendMessageHome()">
+        <button class="btn-send-home" id="chatbotSendHome" onclick="sendMessageHome()">
+            <i class="bi bi-send"></i>
+        </button>
+    </div>
+</div>
 
 <!-- ============================================================
     HERO SECTION
@@ -1777,7 +2163,7 @@
 </section>
 
 <!-- ============================================================
-    COMMENT ÇA MARCHE (NOUVEAU)
+    COMMENT ÇA MARCHE
 ============================================================ -->
 
 <div class="how-it-works-section">
@@ -1885,7 +2271,7 @@
 </div>
 
 <!-- ============================================================
-    APERÇU DE LA CARTE — MINI-CARTE INTERACTIVE (NOUVEAU)
+    APERÇU DE LA CARTE — MINI-CARTE INTERACTIVE
 ============================================================ -->
 
 <div class="map-preview-section">
@@ -2142,7 +2528,7 @@
 </div>
 
 <!-- ============================================================
-    FOIRE AUX QUESTIONS (NOUVEAU)
+    FOIRE AUX QUESTIONS
 ============================================================ -->
 
 <div class="faq-section">
@@ -2235,7 +2621,7 @@
 </div>
 
 <!-- ============================================================
-    ACTIONS DE PAGE — Partager / Imprimer (NOUVEAU)
+    ACTIONS DE PAGE — Partager / Imprimer
 ============================================================ -->
 <div class="page-actions">
     <button class="btn" id="btnSharePageBottom">
@@ -2260,13 +2646,11 @@
         const themeBtns = document.querySelectorAll('#themeSelectorFloating .theme-btn');
         const savedTheme = localStorage.getItem('home-theme') || 'light';
 
-        // Appliquer le thème sauvegardé
         document.documentElement.setAttribute('data-theme', savedTheme);
         themeBtns.forEach(btn => {
             btn.classList.toggle('active-theme', btn.dataset.theme === savedTheme);
         });
 
-        // Gestionnaire de clic
         themeBtns.forEach(btn => {
             btn.addEventListener('click', function() {
                 const theme = this.dataset.theme;
@@ -2276,9 +2660,8 @@
                 themeBtns.forEach(b => b.classList.remove('active-theme'));
                 this.classList.add('active-theme');
 
-                // Afficher un message de confirmation
                 const message = theme === 'light' ? '☀️ Thème clair activé' : '🌙 Thème sombre activé';
-                showToast(message);
+                showToastHome(message);
             });
         });
 
@@ -2305,13 +2688,13 @@
         document.getElementById('btnFontPlus').addEventListener('click', function() {
             currentFontIndex = Math.min(currentFontIndex + 1, FONT_SIZES.length - 1);
             applyFontSize();
-            showToast('🔎 Taille du texte : ' + FONT_LABELS[FONT_SIZES[currentFontIndex]]);
+            showToastHome('🔎 Taille du texte : ' + FONT_LABELS[FONT_SIZES[currentFontIndex]]);
         });
 
         document.getElementById('btnFontMinus').addEventListener('click', function() {
             currentFontIndex = Math.max(currentFontIndex - 1, 0);
             applyFontSize();
-            showToast('🔎 Taille du texte : ' + FONT_LABELS[FONT_SIZES[currentFontIndex]]);
+            showToastHome('🔎 Taille du texte : ' + FONT_LABELS[FONT_SIZES[currentFontIndex]]);
         });
 
         const contrastBtn = document.getElementById('btnContrast');
@@ -2332,7 +2715,7 @@
         contrastBtn.addEventListener('click', function() {
             highContrast = !highContrast;
             applyContrast();
-            showToast(highContrast ? '🌓 Contraste élevé activé' : '🌓 Contraste élevé désactivé');
+            showToastHome(highContrast ? '🌓 Contraste élevé activé' : '🌓 Contraste élevé désactivé');
         });
 
         // ============================================================
@@ -2350,7 +2733,7 @@
                 navigator.share(shareData).catch(() => {});
             } else if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(window.location.href).then(() => {
-                    showToast('🔗 Lien copié dans le presse-papiers');
+                    showToastHome('🔗 Lien copié dans le presse-papiers');
                 }).catch(() => {
                     window.prompt('Copiez ce lien :', window.location.href);
                 });
@@ -2389,7 +2772,7 @@
         // TOAST POUR LES NOTIFICATIONS
         // ============================================================
 
-        function showToast(message) {
+        function showToastHome(message) {
             const existing = document.querySelector('.custom-toast-home');
             if (existing) existing.remove();
 
@@ -2402,11 +2785,10 @@
             `;
             document.body.appendChild(toast);
 
-            // Style du toast
             toast.style.cssText = `
                 position: fixed;
                 bottom: 20px;
-                right: 20px;
+                left: 20px;
                 padding: 14px 24px;
                 border-radius: 12px;
                 z-index: 99999;
@@ -2423,7 +2805,6 @@
                 backdrop-filter: blur(10px);
             `;
 
-            // Style du bouton de fermeture
             const closeBtn = toast.querySelector('button');
             if (closeBtn) {
                 closeBtn.style.cssText = `
@@ -2443,23 +2824,175 @@
                 });
             }
 
-            // Animation d'entrée
-            const style = document.createElement('style');
-            style.textContent = `
-                @keyframes slideUp {
-                    from { transform: translateY(30px); opacity: 0; }
-                    to { transform: translateY(0); opacity: 1; }
-                }
-            `;
-            document.head.appendChild(style);
-
-            // Disparition automatique
             setTimeout(() => {
                 toast.style.opacity = '0';
                 toast.style.transition = 'opacity 0.3s ease';
                 setTimeout(() => toast.remove(), 300);
             }, 3500);
         }
+
+        // ============================================================
+        // CHATBOT IA - SantéBot
+        // ============================================================
+
+        // Base de connaissances du chatbot
+        const knowledgeBaseHome = {
+            'hopital': {
+                keywords: ['hôpital', 'hopital', 'hospital', 'chu', 'clinique', 'centre hospitalier'],
+                response: '🏥 Voici les informations sur les hôpitaux disponibles à Thiès Ouest :<br><br>• <strong>Hôpital Régional</strong> - Thiès Ouest - Service 24h/24<br>• <strong>Centre Hospitalier</strong> - Thiès - Spécialités variées<br>• <strong>Clinique Privée</strong> - Thiès Ouest - Consultations sur RDV<br>• <strong>Centre de Santé</strong> - Thiès - Consultations générales<br><br>📞 Numéro d\'urgence : <strong>1515</strong> (SAMU)'
+            },
+            'pharmacie': {
+                keywords: ['pharmacie', 'pharmacien', 'médicament', 'médicaments', 'ordonnance', 'garde'],
+                response: '💊 Pharmacies et points de vente de médicaments à Thiès Ouest :<br><br>• <strong>Pharmacie Centrale</strong> - Thiès Ouest - 8h-20h<br>• <strong>Pharmacie de Garde</strong> - Thiès - 24h/24<br>• <strong>Pharmacie Santé Plus</strong> - Thiès - 8h-22h<br>• <strong>Pharmacie Nouvelle</strong> - Thiès Ouest - 9h-21h<br><br>🔔 Pour les urgences pharmaceutiques, appelez le <strong>1515</strong>'
+            },
+            'urgence': {
+                keywords: ['urgence', 'urgences', 'samu', 'ambulance', 'secours', 'appel', 'pompier', 'pompiers'],
+                response: '🚑 Services d\'urgence disponibles à Thiès Ouest :<br><br>• <strong>SAMU</strong> - ☎️ <strong>1515</strong><br>• <strong>Pompiers</strong> - ☎️ <strong>18</strong><br>• <strong>Police secours</strong> - ☎️ <strong>17</strong><br>• <strong>Hôpital Régional</strong> - Service des urgences 24h/24<br>• <strong>Centre de Santé</strong> - Urgences mineures<br><br>⚠️ En cas d\'urgence vitale, composez immédiatement le <strong>1515</strong>'
+            },
+            'couverture': {
+                keywords: ['couverture', 'couverture sanitaire', 'accessibilité', 'accès', 'soins', 'desserte', 'taux'],
+                response: '📊 Couverture sanitaire de Thiès Ouest :<br><br>• <strong>Taux global :</strong> {{ couverture_globale|default:"0" }}%<br>• <strong>Zone urbaine :</strong> {{ couverture_urbaine|default:"0" }}%<br>• <strong>Zone rurale :</strong> {{ couverture_rurale|default:"0" }}%<br>• <strong>Établissements :</strong> {{ nb_etablissements|default:"0" }}<br>• <strong>Habitants/établissement :</strong> {{ ratio_pop_etab|default:"0" }}<br>• <strong>Quartiers couverts :</strong> {{ nb_quartiers_couverts|default:"0" }} sur {{ nb_quartiers|default:"0" }}<br><br>📈 {{ couverture_globale|default:"0" }}% des zones sont couvertes.'
+            },
+            'conseil': {
+                keywords: ['conseil', 'conseils', 'santé', 'bien-être', 'prévention', 'hygiène', 'alimentation', 'sport', 'dormir'],
+                response: '💡 Conseils pour une bonne santé :<br><br>• 🍎 <strong>Alimentation équilibrée</strong> - 5 fruits/légumes par jour<br>• 🏃 <strong>Activité physique</strong> - 30 min/jour minimum<br>• 💧 <strong>Hydratation</strong> - 1.5 à 2 litres d\'eau par jour<br>• 😴 <strong>Sommeil</strong> - 7 à 8 heures par nuit<br>• 🧘 <strong>Gestion du stress</strong> - Méditation, respiration<br>• 🩺 <strong>Consultations régulières</strong> - Contrôle annuel<br>• 🧴 <strong>Hygiène</strong> - Lavage des mains régulier<br><br>✅ Prenez soin de vous et de votre famille !'
+            },
+            'vaccination': {
+                keywords: ['vaccination', 'vaccin', 'vaccins', 'covid', 'grippe', 'vacciné', 'hépatite', 'rougeole'],
+                response: '💉 Informations sur la vaccination à Thiès Ouest :<br><br>• <strong>Taux de couverture vaccinale :</strong> {{ taux_couverture_vaccinale|default:"0" }}%<br>• <strong>Objectif national :</strong> {{ objectif_vaccinal|default:"80" }}%<br>• <strong>Centres de vaccination :</strong><br>  - Thiès Ouest - Centre de santé<br>  - Thiès - Hôpital Régional<br>  - Pharmacie Centrale<br>• <strong>Vaccins disponibles :</strong> COVID-19, Grippe, Hépatite B, Rougeole<br>• <strong>Documents requis :</strong> Carte d\'identité, Carnet de santé'
+            },
+            'statistique': {
+                keywords: ['statistique', 'statistiques', 'données', 'chiffres', 'nombre', 'établissement', 'population', 'indicateur'],
+                response: '📊 Statistiques sanitaires de Thiès Ouest :<br><br>• 🏥 Établissements : {{ nb_etablissements|default:"0" }}<br>• 👨‍👩‍👧‍👦 Population : {{ population|default:"0"|floatformat:"0" }}<br>• 📈 Couverture globale : {{ couverture_globale|default:"0" }}%<br>• 🏢 Public : {{ ratio_public|default:"0" }}% | Privé : {{ ratio_prive|default:"0" }}%<br>• ⚠️ Zones sous-équipées : {{ zones_sous_equipees|default:"0" }}<br>• 📊 Indice de Gini : {{ indice_gini|default:"0" }}<br>• 🏥 Lits disponibles : {{ nb_lits|default:"0" }}<br>• 👨‍⚕️ Médecins : {{ nb_medecins|default:"0" }}'
+            },
+            'default': {
+                keywords: [],
+                response: '🤖 Je suis désolé, je n\'ai pas compris votre question. Voici ce que je peux vous aider à trouver :<br><br>• 🏥 <strong>Hôpitaux et cliniques</strong><br>• 💊 <strong>Pharmacies</strong><br>• 🚑 <strong>Urgences</strong><br>• 📊 <strong>Statistiques sanitaires</strong><br>• 💡 <strong>Conseils santé</strong><br>• 💉 <strong>Vaccination</strong><br><br>Essayez de reformuler votre question ou utilisez les suggestions ci-dessous !'
+            }
+        };
+
+        function getBotResponseHome(question) {
+            const lowerQuestion = question.toLowerCase();
+            
+            for (const [key, data] of Object.entries(knowledgeBaseHome)) {
+                for (const keyword of data.keywords) {
+                    if (lowerQuestion.includes(keyword)) {
+                        return data.response;
+                    }
+                }
+            }
+            
+            if (lowerQuestion.includes('bonjour') || lowerQuestion.includes('salut') || lowerQuestion.includes('coucou')) {
+                return '👋 Bonjour ! Comment puis-je vous aider aujourd\'hui ?<br><br>Je suis SantéBot, votre assistant santé pour Thiès Ouest. Posez-moi une question sur les hôpitaux, pharmacies, urgences, vaccination ou conseils de santé !';
+            }
+            
+            if (lowerQuestion.includes('merci') || lowerQuestion.includes('merci beaucoup')) {
+                return '🙏 Avec plaisir ! N\'hésitez pas si vous avez d\'autres questions sur la santé. Prenez soin de vous ! 💚';
+            }
+            
+            if (lowerQuestion.includes('au revoir') || lowerQuestion.includes('bye')) {
+                return '👋 Au revoir ! Restez en bonne santé et n\'hésitez pas à revenir si vous avez besoin d\'informations. SantéBot est toujours là pour vous ! 💚';
+            }
+            
+            return knowledgeBaseHome.default.response;
+        }
+
+        function addMessageHome(text, isUser = true) {
+            const container = document.getElementById('chatbotMessagesHome');
+            const time = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message-home ${isUser ? 'user' : 'bot'}`;
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'avatar';
+            avatar.innerHTML = isUser ? '<i class="bi bi-person"></i>' : '<i class="bi bi-robot"></i>';
+            
+            const bubble = document.createElement('div');
+            bubble.className = 'bubble';
+            bubble.innerHTML = text + `<span class="time">${time}</span>`;
+            
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(bubble);
+            container.appendChild(messageDiv);
+            
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function showTypingIndicatorHome() {
+            const container = document.getElementById('chatbotMessagesHome');
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'typing-indicator-home active';
+            typingDiv.id = 'typingIndicatorHome';
+            typingDiv.innerHTML = '<span></span><span></span><span></span>';
+            container.appendChild(typingDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function hideTypingIndicatorHome() {
+            const indicator = document.getElementById('typingIndicatorHome');
+            if (indicator) indicator.remove();
+        }
+
+        function sendMessageHome() {
+            const input = document.getElementById('chatbotInputHome');
+            const text = input.value.trim();
+            
+            if (!text) return;
+            
+            addMessageHome(text, true);
+            input.value = '';
+            
+            document.getElementById('chatbotSendHome').disabled = true;
+            showTypingIndicatorHome();
+            
+            setTimeout(() => {
+                hideTypingIndicatorHome();
+                
+                const response = getBotResponseHome(text);
+                addMessageHome(response, false);
+                
+                document.getElementById('chatbotSendHome').disabled = false;
+                document.getElementById('chatbotInputHome').focus();
+            }, 1000 + Math.random() * 800);
+        }
+
+        function askQuestionHome(question) {
+            document.getElementById('chatbotInputHome').value = question;
+            sendMessageHome();
+        }
+
+        function toggleChatbotHome() {
+            const container = document.getElementById('chatbotContainerHome');
+            const toggleBtn = document.getElementById('chatbotToggleHome');
+            
+            container.classList.toggle('open');
+            
+            if (container.classList.contains('open')) {
+                toggleBtn.innerHTML = '<i class="bi bi-x-lg"></i>';
+                toggleBtn.style.background = '#dc3545';
+                document.getElementById('chatbotInputHome').focus();
+            } else {
+                toggleBtn.innerHTML = '<i class="bi bi-robot"></i><span class="badge-online"></span>';
+                toggleBtn.style.background = 'linear-gradient(135deg, #0B8A4A, #1CB57C)';
+            }
+        }
+
+        // Exposer les fonctions globalement
+        window.toggleChatbotHome = toggleChatbotHome;
+        window.sendMessageHome = sendMessageHome;
+        window.askQuestionHome = askQuestionHome;
+        window.showToastHome = showToastHome;
+
+        // Gestionnaire pour le bouton toggle
+        document.getElementById('chatbotToggleHome').addEventListener('click', toggleChatbotHome);
+
+        // Focus sur l'input quand le chatbot s'ouvre
+        document.getElementById('chatbotContainerHome').addEventListener('transitionend', function() {
+            if (this.classList.contains('open')) {
+                document.getElementById('chatbotInputHome').focus();
+            }
+        });
 
         // ============================================================
         // COMPTEURS ANIMÉS
@@ -2487,16 +3020,14 @@
             });
         }
 
-        // Lancer l'animation des compteurs avec un délai
         setTimeout(animateCounters, 500);
 
-        // Réanimer les compteurs au scroll (pour les utilisateurs qui scrolent)
+        // Réanimer les compteurs au scroll
         let countersAnimated = false;
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting && !countersAnimated) {
                     countersAnimated = true;
-                    // Réinitialiser les compteurs pour les voir s'animer
                     document.querySelectorAll('.counter').forEach(c => {
                         c.textContent = '0';
                     });
@@ -2688,7 +3219,7 @@
         });
 
         // ============================================================
-        // MINI-CARTE APERÇU (Leaflet, déjà chargé globalement)
+        // MINI-CARTE APERÇU (Leaflet)
         // ============================================================
 
         if (typeof L !== 'undefined' && document.getElementById('miniMap')) {
@@ -2743,6 +3274,7 @@
         }
 
         console.log('✅ Page d\'accueil initialisée avec succès');
+        console.log('🤖 SantéBot chargé et prêt sur la page d\'accueil !');
     });
 </script>
 {% endblock %}

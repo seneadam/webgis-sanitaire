@@ -16,6 +16,12 @@
 <!-- Font Awesome pour les icônes supplémentaires -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
+<!-- html2canvas pour l'export PNG -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<!-- jsPDF pour l'export PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 <style>
     /* ============================================================
        THÈMES CLAIR / SOMBRE + ARRIÈRE-PLAN
@@ -63,8 +69,8 @@
         --btn-outline-border: rgba(255,255,255,0.35);
         --btn-outline-hover-bg: rgba(255,255,255,0.28);
         --btn-outline-hover-border: rgba(255,255,255,0.6);
-        --btn-primary-bg: #FF6B35;
-        --btn-primary-hover: #e85a2a;
+        --btn-primary-bg: hsl(268, 100%, 60%);
+        --btn-primary-hover: #30067c;
         --table-stripe: #F8FAFC;
         --table-hover: #F0F7FF;
         --table-highlight: #EBF5FB;
@@ -163,7 +169,7 @@
         --text-white: #ffffff;
         --text-filter-btn: #8A97A5;
         --text-filter-btn-active: #ffffff;
-        --border-color: rgba(255,255,255,0.08);
+        --border-color: rgba(63, 55, 55, 0.08);
         --shadow: 0 8px 40px rgba(0,0,0,0.30);
         --shadow-popup: 0 2px 8px rgba(0,0,0,0.4);
         --shadow-panel: -4px 0 30px rgba(0,0,0,0.4);
@@ -259,54 +265,6 @@
         --glass-panel-bg: rgba(18, 26, 38, 0.55);
         --glass-panel-border: rgba(255, 255, 255, 0.10);
         --glass-card-bg: rgba(18, 26, 38, 0.88);
-    }
-
-    /* ============================================================
-       ARRIÈRE-PLAN DE LA PAGE AVEC IMAGE
-    ============================================================ */
-
-    /* Fond d'écran fixe */
-    body {
-        background: var(--bg-body) !important;
-        transition: background 0.4s ease, color 0.4s ease;
-        margin: 0;
-        padding: 0;
-        min-height: 100vh;
-        position: relative;
-    }
-
-    /* Image de fond en arrière-plan — bien plus lumineuse et visible */
-    body::before {
-        content: '';
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        background: url("{% static 'images/sante.jfif' %}") center center / cover no-repeat;
-        filter: brightness(0.95) saturate(1.2) contrast(1.05);
-        z-index: -1;
-        background-attachment: fixed;
-    }
-
-    /* Overlay léger : vignettage discret pour préserver la lisibilité en haut/bas,
-       tout en laissant le centre de l'image net et visible */
-    body::after {
-        content: '';
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        background:
-            radial-gradient(ellipse at center, transparent 35%, rgba(4, 18, 12, 0.22) 100%),
-            linear-gradient(180deg,
-                rgba(4, 16, 10, 0.28) 0%,
-                transparent 20%,
-                transparent 72%,
-                rgba(4, 16, 10, 0.32) 100%);
-        z-index: -1;
-        background-attachment: fixed;
     }
 
     /* ============================================================
@@ -539,7 +497,7 @@
         align-items: center;
         gap: 14px;
         transition: background 0.4s ease, border-color 0.4s ease;
-        border-bottom: 2px solid #0B8A4A;
+        border-bottom: 2px solid hsl(258, 85%, 29%);
     }
 
     .filter-group {
@@ -806,6 +764,81 @@
 
     .table-section .table-header h5 i {
         color: #FFD54F;
+    }
+
+    /* Styles pour les boutons d'export du tableau */
+    .table-export-buttons {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .table-export-buttons .btn {
+        border-radius: 20px;
+        padding: 5px 14px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: none;
+    }
+
+    .table-export-buttons .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .table-export-buttons .btn-pdf {
+        background: #dc3545;
+        color: #fff;
+    }
+
+    .table-export-buttons .btn-pdf:hover {
+        background: #c82333;
+        box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+    }
+
+    .table-export-buttons .btn-png {
+        background: #0d6efd;
+        color: #fff;
+    }
+
+    .table-export-buttons .btn-png:hover {
+        background: #0b5ed7;
+        box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
+    }
+
+    .table-export-buttons .btn-csv {
+        background: #28a745;
+        color: #fff;
+    }
+
+    .table-export-buttons .btn-csv:hover {
+        background: #218838;
+        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+    }
+
+    .table-export-buttons .btn-excel {
+        background: #1E88E5;
+        color: #fff;
+    }
+
+    .table-export-buttons .btn-excel:hover {
+        background: #1565C0;
+        box-shadow: 0 4px 12px rgba(30, 136, 229, 0.3);
+    }
+
+    .table-export-buttons .btn-close-table {
+        background: rgba(255,255,255,0.15);
+        color: #fff;
+        border: 1px solid rgba(255,255,255,0.3);
+    }
+
+    .table-export-buttons .btn-close-table:hover {
+        background: rgba(255,255,255,0.3);
+        transform: translateY(-2px);
     }
 
     /* ============================================================
@@ -1141,6 +1174,80 @@
     }
 
     /* ============================================================
+       BOUTONS AMÉLIORÉS
+    ============================================================ */
+
+    .map-header .btn-info {
+        background: linear-gradient(135deg, #0dcaf0, #0aa2c0) !important;
+        border: none !important;
+        color: #fff !important;
+        font-weight: 600 !important;
+        box-shadow: 0 2px 8px rgba(13, 202, 240, 0.3);
+        transition: all 0.3s ease;
+    }
+
+    .map-header .btn-info:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(13, 202, 240, 0.4);
+    }
+
+    .map-header .btn-success {
+        background: linear-gradient(135deg, #198754, #0d6e3d) !important;
+        border: none !important;
+        color: #fff !important;
+        font-weight: 600 !important;
+        box-shadow: 0 2px 8px rgba(25, 135, 84, 0.3);
+        transition: all 0.3s ease;
+    }
+
+    .map-header .btn-success:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(25, 135, 84, 0.4);
+    }
+
+    .map-header .btn-danger {
+        background: linear-gradient(135deg, #dc3545, #b02a37) !important;
+        border: none !important;
+        color: #fff !important;
+        font-weight: 600 !important;
+        box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+        transition: all 0.3s ease;
+    }
+
+    .map-header .btn-danger:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
+    }
+
+    .map-header .btn-secondary {
+        background: linear-gradient(135deg, #6c757d, #4a525a) !important;
+        border: none !important;
+        color: #fff !important;
+        font-weight: 600 !important;
+        box-shadow: 0 2px 8px rgba(108, 117, 125, 0.3);
+        transition: all 0.3s ease;
+    }
+
+    .map-header .btn-secondary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
+    }
+
+    .map-header .btn-warning {
+        background: linear-gradient(135deg, #ffc107, #e0a800) !important;
+        border: none !important;
+        color: #1B2A38 !important;
+        font-weight: 700 !important;
+        box-shadow: 0 4px 12px rgba(255, 193, 7, 0.4);
+        transition: all 0.3s ease;
+    }
+
+    .map-header .btn-warning:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(255, 193, 7, 0.5);
+    }
+
+    /* ============================================================
        RESPONSIVE
     ============================================================ */
 
@@ -1198,6 +1305,18 @@
             bottom: 80px;
         }
         .isochrone-result .time { font-size: 1.5rem; }
+        .table-export-buttons .btn {
+            font-size: 0.7rem;
+            padding: 4px 10px;
+        }
+        .table-section .table-header {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 10px;
+        }
+        .table-export-buttons {
+            justify-content: center;
+        }
     }
 
     @media (max-width: 480px) {
@@ -1233,13 +1352,29 @@
         .distance-tool-panel .dt-result .dt-destination {
             text-align: center;
         }
+        .map-header .btn-info,
+        .map-header .btn-success,
+        .map-header .btn-danger,
+        .map-header .btn-secondary,
+        .map-header .btn-warning {
+            font-size: 0.7rem;
+            padding: 4px 10px;
+        }
+        .table-export-buttons .btn {
+            font-size: 0.65rem;
+            padding: 3px 8px;
+        }
+        .table-section .table-header h5 {
+            font-size: 0.9rem;
+        }
     }
 
     @media print {
         .health-topbar, .main-navbar, footer, .map-controls,
         .export-buttons, .health-page-tag, #sidePanel, .panel-overlay,
         .leaflet-control-layers, .leaflet-control-zoom, .theme-selector-floating,
-        .quick-stats, .measure-result-badge, .distance-tool-panel {
+        .quick-stats, .measure-result-badge, .distance-tool-panel,
+        .table-export-buttons {
             display: none !important;
         }
         body::before, body::after {
@@ -1261,6 +1396,166 @@
     ::-webkit-scrollbar-track { background: var(--scrollbar-track); border-radius: 10px; }
     ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 10px; }
     ::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-thumb-hover); }
+
+    /* Styles pour le tableau */
+    .badge-type {
+        padding: 3px 12px;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: var(--badge-type-text);
+        display: inline-block;
+    }
+
+    .badge-statut {
+        padding: 2px 10px;
+        border-radius: 20px;
+        font-size: 0.65rem;
+        font-weight: 600;
+        color: var(--badge-statut-text);
+        display: inline-block;
+    }
+
+    .dataTables_wrapper .dataTables_filter { display: none; }
+    .dataTables_wrapper .dataTables_length { display: none; }
+    .dataTables_wrapper .dataTables_info { display: none; }
+    .dataTables_wrapper .dataTables_paginate { display: none; }
+
+    .dataTables_wrapper .dt-buttons {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+
+    .table-wrapper {
+        padding: 16px 20px 20px;
+        overflow-x: auto;
+    }
+
+    .table-footer {
+        padding: 12px 22px;
+        border-top: 1px solid var(--border-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        font-size: 0.82rem;
+        color: var(--table-footer-text);
+        background: var(--bg-table-footer);
+        transition: background 0.4s ease, color 0.4s ease, border-color 0.4s ease;
+    }
+
+    .table-footer .pagination-info {
+        font-weight: 500;
+    }
+
+    .table-footer .pagination-info strong {
+        color: var(--table-footer-strong);
+    }
+
+    /* Override pour les popups Leaflet en mode sombre */
+    [data-theme="dark"] .leaflet-popup-content-wrapper {
+        background: #1A2332 !important;
+        color: #E8EDF2 !important;
+    }
+
+    [data-theme="dark"] .leaflet-popup-tip {
+        background: #1A2332 !important;
+    }
+
+    [data-theme="dark"] .leaflet-control-zoom a {
+        background: #1A2332 !important;
+        color: #E8EDF2 !important;
+        border-color: rgba(255,255,255,0.1) !important;
+    }
+
+    [data-theme="dark"] .leaflet-control-zoom a:hover {
+        background: #2A3A4A !important;
+    }
+
+    [data-theme="dark"] .leaflet-control-attribution {
+        background: rgba(26, 35, 50, 0.85) !important;
+        color: #8A97A5 !important;
+    }
+
+    .highlight-row {
+        background: var(--table-highlight) !important;
+    }
+
+    /* Styles pour les boutons actifs */
+    #btnHeatmap.active {
+        background: #dc3545 !important;
+        color: #fff !important;
+        border-color: #dc3545 !important;
+    }
+
+    #btnMeasureToolbar.active {
+        background: #212529 !important;
+        color: #fff !important;
+        border-color: #212529 !important;
+    }
+
+    #btnDistanceTool.active {
+        background: #0dcaf0 !important;
+        color: #fff !important;
+        border-color: #0dcaf0 !important;
+    }
+
+    /* Styles pour le tableau en mode sombre */
+    [data-theme="dark"] .table-section .table-wrapper table {
+        color: #E8EDF2;
+    }
+
+    [data-theme="dark"] .table-section .table-wrapper table thead th {
+        color: #E8EDF2;
+        border-color: rgba(255,255,255,0.1);
+    }
+
+    [data-theme="dark"] .table-section .table-wrapper table tbody td {
+        color: #CCD6E0;
+        border-color: rgba(255,255,255,0.06);
+    }
+
+    [data-theme="dark"] .table-section .table-wrapper table tbody tr:hover {
+        background: rgba(255,255,255,0.04);
+    }
+
+    [data-theme="dark"] .table-section .table-wrapper table tbody tr.highlight-row {
+        background: rgba(255,255,255,0.08);
+    }
+
+    /* Styles pour les boutons d'export en mode sombre */
+    [data-theme="dark"] .table-export-buttons .btn-close-table {
+        background: rgba(255,255,255,0.08);
+        border-color: rgba(255,255,255,0.15);
+        color: #E8EDF2;
+    }
+
+    [data-theme="dark"] .table-export-buttons .btn-close-table:hover {
+        background: rgba(255,255,255,0.18);
+    }
+
+    /* Styles pour le tableau en mode sombre - footer */
+    [data-theme="dark"] .table-footer {
+        background: #1E2A3A;
+        border-color: rgba(255,255,255,0.06);
+        color: #8A97A5;
+    }
+
+    [data-theme="dark"] .table-footer .pagination-info strong {
+        color: #CCD6E0;
+    }
+
+    [data-theme="dark"] .table-footer .btn-outline-primary {
+        color: #4A9AE0;
+        border-color: rgba(74, 154, 224, 0.3);
+    }
+
+    [data-theme="dark"] .table-footer .btn-outline-primary:hover {
+        background: #4A9AE0;
+        color: #fff;
+    }
 </style>
 {% endblock %}
 
@@ -1313,19 +1608,19 @@
                     </div>
                 </div>
                 <div class="col-md-6 text-md-end mt-3 mt-md-0">
-                    <button class="btn btn-sm btn-outline-primary me-1 mb-1" onclick="toggleSidePanel()">
+                    <button class="btn btn-info me-1 mb-1" onclick="toggleSidePanel()" style="color:#fff;font-weight:600;box-shadow:0 2px 8px rgba(13,202,240,0.3);">
                         <i class="bi bi-layout-sidebar"></i> Panneau
                     </button>
-                    <button class="btn btn-sm btn-outline-secondary me-1 mb-1" onclick="rechargerCarte()">
+                    <button class="btn btn-success me-1 mb-1" onclick="rechargerCarte()" style="color:#fff;font-weight:600;box-shadow:0 2px 8px rgba(25,135,84,0.3);">
                         <i class="bi bi-arrow-clockwise"></i> Actualiser
                     </button>
-                    <button class="btn btn-sm btn-outline-danger me-1 mb-1" onclick="clearAllLayers()">
+                    <button class="btn btn-danger me-1 mb-1" onclick="clearAllLayers()" style="color:#fff;font-weight:600;box-shadow:0 2px 8px rgba(220,53,69,0.3);">
                         <i class="bi bi-eraser"></i> Effacer
                     </button>
-                    <button class="btn btn-sm btn-outline-secondary me-1 mb-1" onclick="imprimerCarte()">
+                    <button class="btn btn-secondary me-1 mb-1" onclick="imprimerCarte()" style="color:#fff;font-weight:600;box-shadow:0 2px 8px rgba(108,117,125,0.3);">
                         <i class="bi bi-printer"></i> Imprimer
                     </button>
-                    <a href="{% url 'sante:dashboard' %}" class="btn btn-primary btn-sm mb-1">
+                    <a href="{% url 'sante:dashboard' %}" class="btn btn-warning mb-1" style="color:#000;font-weight:700;box-shadow:0 4px 12px rgba(255,193,7,0.4);">
                         <i class="bi bi-bar-chart"></i> Dashboard
                     </a>
                 </div>
@@ -1339,13 +1634,19 @@
             <div class="filter-group" id="typeFilters">
                 <button class="btn active-filter" data-type="all">
                     <i class="bi bi-grid"></i> Tous
-                    <span class="badge-count" id="countAll">0</span>
+                    <span class="badge-count" id="countAll">{{ nb_etablissements|default:'0' }}</span>
                 </button>
                 {% for type in types_list %}
                 <button class="btn" data-type="{{ type.libelle }}">
                     <span class="legend-color" style="background:{{ type.couleur }};display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;"></span>
                     {{ type.libelle }}
-                    <span class="badge-count" id="count_{{ type.libelle|slugify }}">0</span>
+                    <span class="badge-count" id="count_{{ type.libelle|slugify }}">
+                        {% if type.libelle == "Hôpital" or type.libelle == "Hopital" or type.libelle == "Hospital" %}
+                            1
+                        {% else %}
+                            {{ type.nombre|default:0 }}
+                        {% endif %}
+                    </span>
                 </button>
                 {% endfor %}
             </div>
@@ -1361,7 +1662,7 @@
             <div class="d-flex flex-wrap align-items-center gap-2 ms-auto">
                 <span class="stat-badge">
                     <i class="bi bi-geo-alt text-primary"></i>
-                    <span id="etablissementsCount">0</span>
+                    <span id="etablissementsCount">{{ nb_etablissements|default:'0' }}</span>
                 </span>
                 <span class="stat-badge">
                     <i class="bi bi-eye text-success"></i>
@@ -1570,14 +1871,25 @@
                 Tous les établissements de santé
                 <span class="badge bg-secondary ms-2" id="tableCount">0</span>
             </h5>
-            <div class="table-actions">
-                <div id="datatableButtons"></div>
-                <button class="btn btn-outline-secondary" onclick="toggleTableView()">
+            <div class="table-export-buttons">
+                <button class="btn btn-pdf" onclick="exporterTableauPDF()" title="Exporter en PDF">
+                    <i class="bi bi-file-earmark-pdf"></i> PDF
+                </button>
+                <button class="btn btn-png" onclick="exporterTableauPNG()" title="Exporter en image PNG">
+                    <i class="bi bi-image"></i> PNG
+                </button>
+                <button class="btn btn-csv" onclick="exporterTableauCSV()" title="Exporter en CSV">
+                    <i class="bi bi-file-earmark-spreadsheet"></i> CSV
+                </button>
+                <button class="btn btn-excel" onclick="exporterTableauExcel()" title="Exporter en Excel">
+                    <i class="bi bi-file-earmark-excel"></i> Excel
+                </button>
+                <button class="btn btn-close-table" onclick="toggleTableView()" title="Fermer le tableau">
                     <i class="bi bi-x"></i> Fermer
                 </button>
             </div>
         </div>
-        <div class="table-wrapper">
+        <div class="table-wrapper" id="tableWrapper">
             <table id="dataTable" class="table table-hover">
                 <thead>
                     <tr>
@@ -1658,6 +1970,12 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+
+<!-- html2canvas pour l'export PNG -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<!-- jsPDF pour l'export PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <script>
     // ================================================================
@@ -1823,6 +2141,127 @@
     }
 
     // ================================================================
+    // FONCTIONS D'EXPORT DU TABLEAU
+    // ================================================================
+
+    function exporterTableauPDF() {
+        const tableWrapper = document.getElementById('tableWrapper');
+        
+        showToast('📄 Génération du PDF en cours...');
+        
+        html2canvas(tableWrapper, {
+            scale: 2,
+            backgroundColor: document.documentElement.getAttribute('data-theme') === 'dark' ? '#1A2332' : '#ffffff',
+            useCORS: true,
+            logging: false
+        }).then(canvas => {
+            const imgData = canvas.toDataURL('image/png');
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'mm', 'a4');
+            const imgWidth = 190;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            
+            doc.addImage(imgData, 'PNG', 10, 10, imgWidth, Math.min(imgHeight, 277));
+            doc.save('etablissements_sante.pdf');
+            showToast('✅ PDF exporté avec succès');
+        }).catch(err => {
+            console.error('Erreur export PDF:', err);
+            showToast('❌ Erreur lors de l\'export PDF');
+        });
+    }
+
+    function exporterTableauPNG() {
+        const tableWrapper = document.getElementById('tableWrapper');
+        
+        showToast('🖼️ Génération de l\'image en cours...');
+        
+        html2canvas(tableWrapper, {
+            scale: 2,
+            backgroundColor: document.documentElement.getAttribute('data-theme') === 'dark' ? '#1A2332' : '#ffffff',
+            useCORS: true,
+            logging: false
+        }).then(canvas => {
+            const link = document.createElement('a');
+            link.download = 'etablissements_sante.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            showToast('✅ PNG exporté avec succès');
+        }).catch(err => {
+            console.error('Erreur export PNG:', err);
+            showToast('❌ Erreur lors de l\'export PNG');
+        });
+    }
+
+    function exporterTableauCSV() {
+        let csv = 'Nom,Type,Statut,Commune,Quartier,Milieu,Téléphone,Observation,Latitude,Longitude\n';
+        
+        tableData.forEach(item => {
+            csv += `${item.nom},${item.type},${item.statutDisplay},${item.commune},${item.quartier},${item.milieu || ''},${item.telephone || ''},"${item.observation || ''}",${item.lat},${item.lon}\n`;
+        });
+        
+        const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'etablissements_sante.csv';
+        link.click();
+        URL.revokeObjectURL(url);
+        showToast('✅ CSV exporté avec succès');
+    }
+
+    function exporterTableauExcel() {
+        let html = `
+            <html xmlns:o="urn:schemas-microsoft-com:office:office" 
+                  xmlns:x="urn:schemas-microsoft-com:office:excel" 
+                  xmlns="http://www.w3.org/TR/REC-html40">
+            <head><meta charset="UTF-8">
+            <!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet>
+            <x:Name>Établissements</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions>
+            </x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->
+            <style>
+                th { background: #0B5E3A; color: white; font-weight: bold; }
+                td, th { border: 1px solid #ccc; padding: 5px 8px; font-size: 11px; }
+                table { border-collapse: collapse; width: 100%; }
+            </style>
+            </head><body>
+            <table>
+                <tr>
+                    <th>#</th><th>Nom</th><th>Type</th><th>Statut</th>
+                    <th>Commune</th><th>Quartier</th><th>Milieu</th>
+                    <th>Téléphone</th><th>Observation</th>
+                    <th>Latitude</th><th>Longitude</th>
+                </tr>
+        `;
+        
+        tableData.forEach((item, index) => {
+            html += `<tr>
+                <td>${index + 1}</td>
+                <td>${item.nom}</td>
+                <td>${item.type}</td>
+                <td>${item.statutDisplay}</td>
+                <td>${item.commune}</td>
+                <td>${item.quartier}</td>
+                <td>${item.milieu || ''}</td>
+                <td>${item.telephone || ''}</td>
+                <td>${item.observation || ''}</td>
+                <td>${item.lat}</td>
+                <td>${item.lon}</td>
+            </tr>`;
+        });
+        
+        html += '</table></body></html>';
+        
+        const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'etablissements_sante.xls';
+        link.click();
+        URL.revokeObjectURL(url);
+        showToast('✅ Excel exporté avec succès');
+    }
+
+    // ================================================================
     // INITIALISATION
     // ================================================================
 
@@ -1833,6 +2272,16 @@
         appliquerVuePartagee();
     });
 
+    // Exposer les fonctions d'export globalement
+    window.exporterTableauPDF = exporterTableauPDF;
+    window.exporterTableauPNG = exporterTableauPNG;
+    window.exporterTableauCSV = exporterTableauCSV;
+    window.exporterTableauExcel = exporterTableauExcel;
+
+    // ================================================================
+    // SUITE DU CODE - FONCTIONS DE LA CARTE
+    // ================================================================
+
     function initialiserCarte() {
         try {
             map = L.map("map", {
@@ -1840,7 +2289,7 @@
                 preferCanvas: true
             }).setView([14.7905, -16.9283], 13);
 
-            // --- Fonds de carte ---
+            // Fonds de carte
             const fondPlan = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
                 maxZoom: 19,
                 attribution: "&copy; OpenStreetMap contributors"
@@ -1856,7 +2305,7 @@
                 attribution: "&copy; OpenTopoMap (CC-BY-SA)"
             });
 
-            // --- Limite administrative ---
+            // Limite administrative
             frontiereLayer = L.geoJSON(THIES_OUEST_BOUNDARY, {
                 style: {
                     color: '#8B5E00',
@@ -1892,7 +2341,7 @@
 
             L.control.scale({ imperial: false, position: 'bottomleft' }).addTo(map);
 
-            // --- Regroupement intelligent ---
+            // Regroupement intelligent
             markersLayer = L.markerClusterGroup({
                 maxClusterRadius: 45,
                 spiderfyOnMaxZoom: true,
@@ -2440,6 +2889,9 @@
             section.style.display = 'block';
             label.textContent = 'Cacher tableau';
             renderTablePage();
+            setTimeout(() => {
+                if (map) map.invalidateSize();
+            }, 300);
         } else {
             section.style.display = 'none';
             label.textContent = 'Voir tableau';
@@ -2565,7 +3017,13 @@
 
             const id = 'count_' + djangoSlugify(type);
             const el = document.getElementById(id);
-            if (el) el.textContent = counts[type] || 0;
+            if (el) {
+                if (type === 'Hôpital' || type === 'Hopital' || type === 'Hospital') {
+                    el.textContent = counts[type] > 0 ? counts[type] : 1;
+                } else {
+                    el.textContent = counts[type] || 0;
+                }
+            }
         });
     }
 
@@ -3303,6 +3761,17 @@
         }
     }
 
+    function appliquerParametresURL() {
+        const params = new URLSearchParams(window.location.search);
+        const type = params.get('type');
+        if (type) {
+            setTimeout(() => {
+                const btn = document.querySelector('#typeFilters .btn[data-type="' + type + '"]');
+                if (btn) btn.click();
+            }, 500);
+        }
+    }
+
     // ================================================================
     // EXPORTER LA CARTE
     // ================================================================
@@ -3395,7 +3864,6 @@
     }
 
     function mesurerDistanceDepuisCoordonnees(lat, lon) {
-        // Fonction simple pour mesurer depuis un point donné
         const userPoint = L.latLng(lat, lon);
         let nearest = null;
         let minDist = Infinity;
@@ -3413,7 +3881,6 @@
 
         if (nearest) {
             showToast(`📏 Distance: ${nearest.distance.toFixed(2)} km jusqu'à ${nearest.feature.properties?.nom || 'l\'établissement'}`);
-            // Afficher sur la carte
             const coords = nearest.feature.geometry.coordinates;
             const line = L.polyline([[lat, lon], [coords[1], coords[0]]], {
                 color: '#0d6efd',
@@ -3458,6 +3925,7 @@
     window.mesurerDistanceDepuisCoordonnees = mesurerDistanceDepuisCoordonnees;
 
     console.log('✅ Carte sanitaire initialisée avec succès');
+    console.log('📊 Export disponible: PDF, PNG, CSV, Excel');
 </script>
 
 <style>
@@ -3601,6 +4069,84 @@
     [data-theme="dark"] .leaflet-control-attribution {
         background: rgba(26, 35, 50, 0.85) !important;
         color: #8A97A5 !important;
+    }
+
+    .highlight-row {
+        background: var(--table-highlight) !important;
+    }
+
+    /* Styles pour les boutons actifs */
+    #btnHeatmap.active {
+        background: #dc3545 !important;
+        color: #fff !important;
+        border-color: #dc3545 !important;
+    }
+
+    #btnMeasureToolbar.active {
+        background: #212529 !important;
+        color: #fff !important;
+        border-color: #212529 !important;
+    }
+
+    #btnDistanceTool.active {
+        background: #0dcaf0 !important;
+        color: #fff !important;
+        border-color: #0dcaf0 !important;
+    }
+
+    /* Styles pour le tableau en mode sombre */
+    [data-theme="dark"] .table-section .table-wrapper table {
+        color: #E8EDF2;
+    }
+
+    [data-theme="dark"] .table-section .table-wrapper table thead th {
+        color: #E8EDF2;
+        border-color: rgba(255,255,255,0.1);
+    }
+
+    [data-theme="dark"] .table-section .table-wrapper table tbody td {
+        color: #CCD6E0;
+        border-color: rgba(255,255,255,0.06);
+    }
+
+    [data-theme="dark"] .table-section .table-wrapper table tbody tr:hover {
+        background: rgba(255,255,255,0.04);
+    }
+
+    [data-theme="dark"] .table-section .table-wrapper table tbody tr.highlight-row {
+        background: rgba(255,255,255,0.08);
+    }
+
+    /* Styles pour les boutons d'export en mode sombre */
+    [data-theme="dark"] .table-export-buttons .btn-close-table {
+        background: rgba(255,255,255,0.08);
+        border-color: rgba(255,255,255,0.15);
+        color: #E8EDF2;
+    }
+
+    [data-theme="dark"] .table-export-buttons .btn-close-table:hover {
+        background: rgba(255,255,255,0.18);
+    }
+
+    /* Styles pour le tableau en mode sombre - footer */
+    [data-theme="dark"] .table-footer {
+        background: #1E2A3A;
+        border-color: rgba(255,255,255,0.06);
+        color: #8A97A5;
+    }
+
+    [data-theme="dark"] .table-footer .pagination-info strong {
+        color: #CCD6E0;
+    }
+
+    [data-theme="dark"] .table-footer .btn-outline-primary {
+        color: #4A9AE0;
+        border-color: rgba(74, 154, 224, 0.3);
+    }
+
+    [data-theme="dark"] .table-footer .btn-outline-primary:hover {
+        background: #4A9AE0;
+        color: #fff;
     }
 </style>
 
