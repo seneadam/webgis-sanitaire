@@ -25,16 +25,13 @@ ALLOWED_HOSTS = [
 
 
 # ============================================================
-# GEODJANGO / QGIS 3.44.8
+# GEODJANGO / QGIS 4.0.3
 # ============================================================
 
-QGIS_BIN = r"C:\Program Files\QGIS 3.44.8\bin"
+QGIS_BIN = r"C:\Program Files\QGIS 4.0.3\bin"
+QGIS_PROJ = r"C:\Program Files\QGIS 4.0.3\share\proj"
+QGIS_GDAL_DATA = r"C:\Program Files\QGIS 4.0.3\share\gdal"
 
-QGIS_PROJ = r"C:\Program Files\QGIS 3.44.8\share\proj"
-
-QGIS_GDAL_DATA = r"C:\Program Files\QGIS 3.44.8\share\gdal"
-
-# Configuration Windows
 if os.name == "nt":
 
     if os.path.exists(QGIS_BIN):
@@ -54,11 +51,13 @@ if os.name == "nt":
         os.environ["GDAL_DATA"] = QGIS_GDAL_DATA
 
 
-# Bibliothèques GDAL et GEOS
+# ============================================================
+# BIBLIOTHÈQUES GDAL / GEOS
+# ============================================================
 
 GDAL_LIBRARY_PATH = os.path.join(
     QGIS_BIN,
-    "gdal312.dll"
+    "gdal313.dll"
 )
 
 GEOS_LIBRARY_PATH = os.path.join(
@@ -165,7 +164,6 @@ TEMPLATES = [
         "APP_DIRS": True,
 
         "OPTIONS": {
-
             "context_processors": [
 
                 "django.template.context_processors.debug",
@@ -202,11 +200,11 @@ DATABASES = {
 
         "USER": "postgres",
 
-        "PASSWORD": "12345",
+        "PASSWORD": "deme",
 
         "HOST": "localhost",
 
-        "PORT": "5433",
+        "PORT": "5432",
     }
 }
 
@@ -259,7 +257,6 @@ USE_TZ = True
 STATIC_URL = "/static/"
 
 STATICFILES_DIRS = [
-
     BASE_DIR / "static",
 ]
 
