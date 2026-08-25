@@ -1,0 +1,88 @@
+# 🏥 WebGIS Sanitaire - Thiès Ouest
+
+## 📋 Description
+
+Ce projet est une application WebGIS développée avec **Django** et **Leaflet** pour la cartographie et l'analyse de l'offre de soins de la commune de **Thiès Ouest**, Sénégal. Il permet de visualiser, filtrer et analyser les infrastructures sanitaires en lien avec le Ministère de la Santé et de l'Action Sociale.
+
+---
+
+## 🚀 Fonctionnalités
+
+### 1. 🗺️ Carte Interactive
+- Visualisation des établissements de santé sur une carte Leaflet
+- Navigation, zoom et recherche géographique
+- Affichage des informations détaillées des établissements
+
+### 2. 🎯 Filtres Avancés
+- Filtrage par type d'établissement (Hôpital, Pharmacie, Centre de santé, Poste de santé, Clinique)
+- Recherche par nom ou localisation
+- Filtrage par quartier
+
+### 3. 📊 Tableau de Bord
+- Statistiques globales (nombre d'établissements, types, quartiers)
+- Graphiques dynamiques
+- Indicateurs de performance
+
+### 4. 📍 Géolocalisation
+- Localisation automatique de l'utilisateur
+- Calcul des établissements les plus proches
+- Itinéraires vers les établissements
+
+### 5. 📥 Export de Données
+- Export au format GeoJSON
+- Export au format CSV
+- Export de rapports PDF
+
+### 6. 🤝 Contribution Citoyenne
+- Signalement de nouveaux établissements
+- Mise à jour des informations existantes
+- Modération des contributions
+
+### 7. 🤖 Assistant IA
+- Chatbot intelligent pour l'orientation
+- Réponses aux questions fréquentes
+- Assistance à la recherche
+
+### 8. 🔔 Alertes Sanitaires
+- Notifications en temps réel
+- Campagnes de vaccination
+- Alertes épidémiologiques
+
+### 9. 📰 Actualités
+- Publication des actualités sanitaires
+- Mise en avant des campagnes
+- Informations institutionnelles
+
+### 10. 🌓 Thème Clair / Sombre
+- Interface adaptative
+- Sauvegarde des préférences
+- Accessibilité améliorée
+
+---
+
+## 🛠️ Technologies Utilisées
+
+### Backend
+- **Python 3.10+**
+- **Django 4.2+**
+- **Django REST Framework**
+- **PostgreSQL** avec **PostGIS**
+- **GDAL** pour le traitement spatial
+
+### Frontend
+- **Bootstrap 5**
+- **Leaflet.js** pour la cartographie
+- **Chart.js** pour les graphiques
+- **Font Awesome / Bootstrap Icons**
+- **CSS3** avec variables pour les thèmes
+
+### Dépendances
+```txt
+Django>=4.2.0
+djangorestframework>=3.14.0
+psycopg2>=2.9.0
+django-leaflet>=0.29.0
+django-cors-headers>=4.0.0
+python-dotenv>=1.0.0
+Pillow>=10.0.0
+django-import-export>=3.3.0
